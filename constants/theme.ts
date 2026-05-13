@@ -74,7 +74,7 @@ const paletteDark = {
 
 /**
  * Devuelve el tema MD3 de React Native Paper fusionado con los tokens NoteFlow.
- * Pasa useColorScheme() o null (se trata como claro).
+ * Pasa el esquema resuelto (`'light' | 'dark'`); si llega `null`, se trata como claro.
  */
 export function getNoteFlowPaperTheme(
   colorScheme: ColorSchemeName

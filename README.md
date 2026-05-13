@@ -17,7 +17,9 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 **Paso 1 (curso) hecho:** proyecto Expo creado en la **raíz de este repositorio** con `create-expo-app` plantilla **blank-typescript** (SDK Expo 54).
 
-**Paso 2 (curso) hecho:** `expo-router` y dependencias de navegación instaladas con `expo install`; `package.json` usa **`main`: `expo-router/entry`**; en `app.json` hay **`scheme`: `noteflow`** (deep links tipo `noteflow://`). Carpetas **`app/`**, **`components/`**, **`store/`**, **`types/`**, **`constants/`** creadas; entrada en **`app/_layout.tsx`** y **`app/index.tsx`**. `babel.config.js` incluye el plugin **`expo-router/babel`**.
+**Paso 2 (curso) hecho:** `expo-router` y dependencias de navegación instaladas con `expo install`; `package.json` usa **`main`: `expo-router/entry`**; en `app.json` hay **`scheme`: `noteflow`** (deep links tipo `noteflow://`). Carpetas **`app/`**, **`components/`**, **`store/`**, **`types/`**, **`constants/`** creadas; entrada en **`app/_layout.tsx`** y **`app/index.tsx`**. `babel.config.js` usa **`babel-preset-expo`** (preset de Expo; el plugin antiguo `expo-router/babel` ya no aplica en SDK recientes).
+
+**Navegación NoteFlow:** pestañas **Notas / Checklists / Ideas**, detalle dinámico `[id]` por sección y modal **`/nueva-note`**; detalle en [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
 `create-expo-app` no permite mezclar con archivos existentes; antes del scaffold inicial se movieron temporalmente `.cursor/`, `.cursorrules` y `README.md` y luego se restauraron.
 
@@ -34,7 +36,7 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 ## Stack previsto (curso)
 
 - **React Native** + **Expo** — app nativa con flujo ágil. Fundamentos (hilos JS/UI): [`docs/react-native-fundamentals.md`](docs/react-native-fundamentals.md). Teoría (Metro, RN vs nativo, UI Gluestack vs Paper): [`docs/react-native-teoria.md`](docs/react-native-teoria.md). **Expo Go** vs **Development Build**: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
-- **Expo Router** — navegación basada en archivos y layouts.
+- **Expo Router** — navegación basada en archivos y layouts; arquitectura Tabs + Stack + modal: [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 - **FlashList** — listas de alto rendimiento cuando el volumen de notas y tareas crece.
 - **Zustand** — estado global ligero.
 - **Persistencia local** — datos en el dispositivo entre sesiones.
@@ -49,6 +51,7 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 | `docs/react-native-teoria.md` | RN vs nativo, Metro, Expo Go, comparativa UI y **sistema de diseño (Paper + tokens)** |
 | `constants/theme.ts` | Tokens (`spacing`, `typography`) y `getNoteFlowPaperTheme` (claro/oscuro) |
 | `docs/expo-go-vs-development-build.md` | Expo Go vs Development Build (EAS): cuándo usar cada uno (curso) |
+| `docs/expo-router-navegacion.md` | Tabs vs Stack vs modal en NoteFlow y archivos de rutas (`app/`) |
 | `docs/project-management.md` | Trello: columnas, flujo de trabajo y tarjetas/subtareas sugeridas |
 | `docs/ai-setup.md` | Configuración de IA (Cursor, Gemini, Claude, otras) y por qué |
 | `.cursorrules` | Reglas de contexto en raíz para Cursor: stack RN+TS, estilo, restricciones |
