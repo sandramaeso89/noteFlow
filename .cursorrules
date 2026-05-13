@@ -9,7 +9,7 @@ Lee también `docs/idea.md` (producto), `docs/react-native-fundamentals.md` (hil
 - **Nombre:** NoteFlow.
 - **Qué es:** app móvil de productividad para profesionales con muchas reuniones: notas breves post-reunión (**Reunión**), tareas (**Acción**) y **Referencia** (enlaces o datos breves); pendientes, archivo sin perder contexto.
 - **Documentación de producto:** `docs/idea.md`.
-- **Estado del repo:** puede estar solo con documentación o con scaffold Expo; **no inventes** rutas: inspecciona el árbol antes de asumir `app/`, `src/`, etc.
+- **Estado del repo:** Expo + **Expo Router** en la raíz (`app/` para rutas). Carpetas `components/`, `store/`, `types/`, `constants/` listas. **Inspecciona** el árbol antes de asumir archivos que no existan.
 
 ---
 

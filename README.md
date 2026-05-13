@@ -15,7 +15,21 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 ## Estado del proyecto
 
-Fase inicial: documentación de la idea en el repositorio. La implementación prevista sigue el módulo de desarrollo móvil con **React Native** y **Expo**. La configuración de **herramientas de IA** (Cursor, Gemini, Claude, etc.) está descrita en [`docs/ai-setup.md`](docs/ai-setup.md).
+**Paso 1 (curso) hecho:** proyecto Expo creado en la **raíz de este repositorio** con `create-expo-app` plantilla **blank-typescript** (SDK Expo 54).
+
+**Paso 2 (curso) hecho:** `expo-router` y dependencias de navegación instaladas con `expo install`; `package.json` usa **`main`: `expo-router/entry`**; en `app.json` hay **`scheme`: `noteflow`** (deep links tipo `noteflow://`). Carpetas **`app/`**, **`components/`**, **`store/`**, **`types/`**, **`constants/`** creadas; entrada en **`app/_layout.tsx`** y **`app/index.tsx`**. `babel.config.js` incluye el plugin **`expo-router/babel`**.
+
+`create-expo-app` no permite mezclar con archivos existentes; antes del scaffold inicial se movieron temporalmente `.cursor/`, `.cursorrules` y `README.md` y luego se restauraron.
+
+La configuración de **herramientas de IA** sigue en [`docs/ai-setup.md`](docs/ai-setup.md).
+
+## Arranque local
+
+```bash
+npm start
+```
+
+Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simulador (teclas `i` / `a` en la CLI de Expo según entorno).
 
 ## Stack previsto (curso)
 
