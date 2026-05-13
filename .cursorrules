@@ -1,0 +1,74 @@
+# NoteFlow — reglas de contexto para IA (Cursor y compatibles)
+
+Lee también `docs/idea.md` (producto), `docs/react-native-fundamentals.md` (hilos JS/UI y rendimiento), `docs/expo-go-vs-development-build.md` (Expo Go vs EAS Development Build), `README.md` (stack y estado) y la skill del repo en `.cursor/skills/noteflow/SKILL.md` (flujo de trabajo con Sandra).
+
+---
+
+## Proyecto
+
+- **Nombre:** NoteFlow.
+- **Qué es:** app móvil de productividad para profesionales con muchas reuniones: notas breves post-reunión (**Reunión**), tareas (**Acción**) y **Referencia** (enlaces o datos breves); pendientes, archivo sin perder contexto.
+- **Documentación de producto:** `docs/idea.md`.
+- **Estado del repo:** puede estar solo con documentación o con scaffold Expo; **no inventes** rutas: inspecciona el árbol antes de asumir `app/`, `src/`, etc.
+
+---
+
+## Stack objetivo (curso)
+
+- **React Native** + **Expo**
+- **Fundamentos:** hilos JS y UI nativo, vistas reales (no HTML por defecto); ver `docs/react-native-fundamentals.md`.
+- **Entorno de prueba:** **Expo Go** (QR, sin compilar binario propio) frente a **Development Build** con **EAS Build** (binario propio, nativos personalizados como cámara avanzada, push, biometría); ver `docs/expo-go-vs-development-build.md`.
+- **TypeScript** en todo código nuevo (`.ts` / `.tsx`)
+- **Expo Router** — rutas basadas en archivos bajo `app/` cuando exista el proyecto Expo
+- **FlashList** — listas principales de muchos ítems (mejor rendimiento que `FlatList` por defecto en esos casos)
+- **Zustand** — estado global acotado; persistencia local según enunciado
+- **Sistema de diseño** — tokens centralizados (color, tipografía, espaciado); no dispersar valores mágicos cuando exista `theme` o equivalente
+
+No añadas **Python** ni backend salvo que el enunciado o `README` lo indiquen.
+
+---
+
+## Estilo de código (React Native + TypeScript)
+
+- **Componentes:** funciones con props tipadas con `type` o `interface`; evita `React.FC` salvo convención explícita del repo.
+- **Archivos:** `PascalCase` para componentes de pantalla/UI (`MeetingCard.tsx`); `camelCase` para utilidades y hooks (`useMeetings.ts`).
+- **Hooks:** prefijo `use`; reglas de hooks de React sin excepciones.
+- **Estilos:** `StyleSheet.create` o el sistema que adopte el proyecto (tokens); en listas pesadas, evita objetos inline que cambien identidad en cada render si perjudica rendimiento.
+- **Listas largas:** `@shopify/flash-list` con `estimatedItemSize` razonable cuando FlashList esté en el proyecto.
+- **Navegación:** API de Expo Router (`router.push`, layouts); no mezclar patrones de React Navigation a mano salvo que el curso lo exija.
+- **Plataforma:** `Platform.OS` / `Platform.select` solo cuando haga falta; imports de APIs nativas vía Expo cuando existan.
+- **Seguridad y datos:** validar texto de usuario antes de guardar o mostrar; sin secretos en código; `.env` para claves cuando haya integraciones.
+
+---
+
+## Idioma y copia
+
+- **Comentarios en el código:** español, cortos, orientados a junior (qué y por qué).
+- **Nombres de variables, funciones, tipos, archivos de lógica:** inglés.
+- **Textos de UI** (labels, errores, vacíos): español.
+
+---
+
+## Restricciones de trabajo (obligatorias)
+
+1. **Alcance:** implementa solo lo que pida el enunciado o Sandra; el resto como sugerencia, no como código, sin confirmación.
+2. **Dependencias:** no instales, actualices ni elimines paquetes sin acuerdo explícito; revisa `package.json` antes de asumir librerías.
+3. **Cambios mínimos:** no reescribas archivos enteros por un ajuste pequeño; no refactors globales ni movimiento de carpetas sin pedirlo.
+4. **Diseño:** no cambies tokens (color, tipografía, espaciado) sin orden directa.
+5. **Git:** no hagas `commit` ni `push` automáticamente; propón mensaje en formato Conventional Commits (`feat:`, `fix:`, `style:`, `docs:`, `security:`).
+6. **Móvil primero:** layouts legibles y táctiles en tamaños de teléfono; accesibilidad razonable (`accessibilityLabel`, contraste).
+7. **Documentación:** tras cambios relevantes, mantén al día `README.md` y `docs/` según corresponda.
+
+---
+
+## Prioridad de contexto
+
+Si Sandra adjunta **captura de pantalla** (UI, error de Metro/Expo), prioriza lo que muestra la imagen frente al texto libre.
+
+---
+
+## Comprobación rápida antes de proponer código
+
+- ¿Coincide con `docs/idea.md` y tres tipos de contenido?
+- ¿TypeScript estricto razonable (sin `any` innecesario)?
+- ¿Existe el archivo o la ruta que citas en el repo actual?
