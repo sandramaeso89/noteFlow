@@ -33,12 +33,12 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 
 ## Stack previsto (curso)
 
-- **React Native** + **Expo** — app nativa con flujo ágil. Fundamentos (hilos JS/UI): [`docs/react-native-fundamentals.md`](docs/react-native-fundamentals.md). **Expo Go** (QR, sin binario propio) vs **Development Build** / **EAS Build** (nativos personalizados): [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
+- **React Native** + **Expo** — app nativa con flujo ágil. Fundamentos (hilos JS/UI): [`docs/react-native-fundamentals.md`](docs/react-native-fundamentals.md). Teoría (Metro, RN vs nativo, UI Gluestack vs Paper): [`docs/react-native-teoria.md`](docs/react-native-teoria.md). **Expo Go** vs **Development Build**: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
 - **Expo Router** — navegación basada en archivos y layouts.
 - **FlashList** — listas de alto rendimiento cuando el volumen de notas y tareas crece.
 - **Zustand** — estado global ligero.
 - **Persistencia local** — datos en el dispositivo entre sesiones.
-- **Sistema de diseño** — tokens y componentes reutilizables para una UI coherente.
+- **Sistema de diseño** — tokens en [`constants/theme.ts`](constants/theme.ts); UI con **React Native Paper** (MD3) y tema claro/oscuro según sistema. Detalle y justificación: [`docs/react-native-teoria.md`](docs/react-native-teoria.md) (sección *Sistemas de diseño*).
 
 ## Documentación
 
@@ -46,6 +46,8 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 |---------|-----------|
 | `docs/idea.md` | Problema, usuario, funcionalidades |
 | `docs/react-native-fundamentals.md` | Fundamentos RN del tutor: vistas nativas, hilo JS vs UI, rendimiento y vínculo con NoteFlow |
+| `docs/react-native-teoria.md` | RN vs nativo, Metro, Expo Go, comparativa UI y **sistema de diseño (Paper + tokens)** |
+| `constants/theme.ts` | Tokens (`spacing`, `typography`) y `getNoteFlowPaperTheme` (claro/oscuro) |
 | `docs/expo-go-vs-development-build.md` | Expo Go vs Development Build (EAS): cuándo usar cada uno (curso) |
 | `docs/project-management.md` | Trello: columnas, flujo de trabajo y tarjetas/subtareas sugeridas |
 | `docs/ai-setup.md` | Configuración de IA (Cursor, Gemini, Claude, otras) y por qué |

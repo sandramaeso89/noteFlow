@@ -1,32 +1,49 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Surface, Text, useTheme } from 'react-native-paper';
 
-// Pantalla inicial (ruta /) mientras crecemos el resto de flujos NoteFlow
+import { spacing, typography } from '../constants/theme';
+
+// Pantalla inicial: usa el tema Paper + tokens de espaciado/tipografía
 export default function HomeScreen() {
+  const theme = useTheme();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>NoteFlow</Text>
-      <Text style={styles.subtitle}>Expo Router configurado</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Surface style={[styles.screen, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.content}>
+        <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>
+          NoteFlow
+        </Text>
+        <Text
+          variant="bodyLarge"
+          style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.sm }}
+        >
+          Expo Router + React Native Paper
+        </Text>
+        <Text
+          variant="bodyMedium"
+          style={{
+            color: theme.colors.onSurfaceVariant,
+            marginTop: spacing.md,
+            fontSize: typography.fontSize.sm,
+          }}
+        >
+          Tema {theme.dark ? 'oscuro' : 'claro'} (sigue el sistema)
+        </Text>
+      </View>
+      <StatusBar style={theme.dark ? 'light' : 'dark'} />
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
+    padding: spacing.xl,
   },
 });

@@ -12,6 +12,8 @@ description: >-
 
 **LEER SIEMPRE** antes de cualquier acción en este repositorio. Sandra es una desarrolladora junior con gran enfoque en **ciberseguridad**; actúa como su **mentor senior**.
 
+**Flujo con Sandra (obligatorio):** en cada petición concreta, **explica primero** qué implica (archivos, riesgos) y **pregunta** «¿Quieres que lo aplique en el repo?»; **no** modifiques archivos ni ejecutes terminal **hasta** su **«sí»** o **«aplica sin preguntar»**. Si ya respondió **sí** en ese mensaje, puedes ejecutar sin repetir la pregunta.
+
 Esta skill está **fijada a NoteFlow**. La plantilla genérica reutilizable entre proyectos vive en `~/.cursor/skills/sandra-proyecto-base/`.
 
 ---
@@ -61,7 +63,7 @@ UI **moderna, minimalista y profesional**: confianza, claridad y poca fricción 
 
 ### Estado actual del repo (última documentación)
 
-**Fase inicial:** existe documentación de producto (`docs/idea.md`, `docs/react-native-fundamentals.md`, `docs/expo-go-vs-development-build.md`, `README.md`). **Scaffold Expo (paso 1 del curso) aplicado** en la raíz. **Expo Router (paso 2)** configurado: `main` → `expo-router/entry`, `scheme` → `noteflow`, carpetas `app/`, `components/`, `store/`, `types/`, `constants/`. No asumas rutas que aún no existan en el árbol.
+**Fase inicial:** existe documentación de producto (`docs/idea.md`, `docs/react-native-fundamentals.md`, `docs/react-native-teoria.md`, `docs/expo-go-vs-development-build.md`, `README.md`). **Scaffold Expo (paso 1 del curso) aplicado** en la raíz. **Expo Router (paso 2)** configurado: `main` → `expo-router/entry`, `scheme` → `noteflow`, carpetas `app/`, `components/`, `store/`, `types/`, `constants/`. No asumas rutas que aún no existan en el árbol.
 
 ---
 
@@ -71,7 +73,7 @@ UI **moderna, minimalista y profesional**: confianza, claridad y poca fricción 
 2. **Prioridad visual:** si adjunta **imagen** (captura, diseño, error de Metro/Expo), esa imagen tiene **prioridad** sobre el texto.
 3. **Fidelidad al enunciado:** solo lo pedido; extras como **sugerencia**, no como código, sin OK.
 4. **Si algo no está claro:** pregunta antes de implementar.
-5. **Alineación docs-código:** lee `README.md`, `docs/idea.md`, `docs/react-native-fundamentals.md` y `docs/expo-go-vs-development-build.md` cuando toque UI, rendimiento o entorno de ejecución; si el código contradice la idea de producto, dilo y ajusta **con OK**.
+5. **Alineación docs-código:** lee `README.md`, `docs/idea.md`, `docs/react-native-fundamentals.md`, `docs/react-native-teoria.md` y `docs/expo-go-vs-development-build.md` cuando toque UI, rendimiento, tooling o entorno de ejecución; si el código contradice la idea de producto, dilo y ajusta **con OK**.
 6. **Móvil primero:** todo lo visual debe funcionar bien en **tamaños de móvil**; táctiles y legibilidad son obligatorios.
 7. **Documentación viva:** tras cambios relevantes, actualiza **`README.md`** y/o **`docs/`** (p. ej. `docs/idea.md` si cambia alcance).
 8. **Errores:** explica el **log** o mensaje relevante **antes** de proponer la solución.
@@ -131,21 +133,19 @@ Cuando exista el código, lo habitual con **Expo Router** es la carpeta **`app/`
 
 ```text
 app/                 # Rutas, layouts y pantallas (Expo Router)
-src/
-├── components/      # UI reutilizable
-├── store/           # Zustand
-├── hooks/
-├── services/        # Persistencia local, futuras APIs
-├── theme/           # Tokens de diseño (colores, tipografía, espaciado)
-└── utils/
+components/          # UI reutilizable
+constants/
+└── theme.ts         # Tokens + tema Paper (claro/oscuro)
+store/               # Zustand (pendiente de modelar)
+types/
 docs/
-├── idea.md          # Producto: problema, usuario, alcance v1
-├── react-native-fundamentals.md  # Hilos JS/UI y rendimiento (curso)
-├── expo-go-vs-development-build.md  # Expo Go vs EAS Development Build (curso)
-└── …                # Otros docs del curso o proceso
+├── idea.md
+├── react-native-fundamentals.md
+├── react-native-teoria.md
+└── …
 ```
 
-Ajusta nombres al boilerplate que imponga el enunciado o `npx create-expo-app`.
+Si el curso exige `src/`, mueve carpetas con cuidado y actualiza imports.
 
 ---
 
