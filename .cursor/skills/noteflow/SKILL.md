@@ -59,7 +59,7 @@ Piensas antes de actuar, propones antes de ejecutar y no sorprendes con cambios 
 
 ### Objetivo de producto y tono visual
 
-UI **moderna, minimalista y profesional**: confianza, claridad y poca fricción al capturar. **Referencia visual:** aún **por definir** en diseño; hasta entonces, coherencia estricta con el **sistema de diseño** del repo (sin colores sueltos hardcodeados fuera de tokens cuando existan).
+UI **moderna, minimalista y profesional** (pro / urban editorial en clave **monocroma + grises**). **Referencia visual fijada:** mockup en [`docs/design-reference-mockup.png`](../../../docs/design-reference-mockup.png) y especificación en [`docs/diseno-ui.md`](../../../docs/diseno-ui.md) — tarjetas NOTA / CHECKLIST / IDEIA, alto contraste, **capa extra de grises** (fondos, bordes, previews, tracks); acento violeta **puntual** (p. ej. punto en notas). No cambiar tokens ni estilo global sin OK de Sandra. Coherencia estricta con `constants/theme.ts` cuando se actualice.
 
 ### Estado actual del repo (última documentación)
 

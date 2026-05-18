@@ -1,38 +1,39 @@
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { FAB, List, Text, useTheme } from 'react-native-paper';
+import { StyleSheet, View } from 'react-native';
 
+import { ChecklistCard } from '../../../components/items/ChecklistCard';
+import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { spacing } from '../../../constants/theme';
-
-const MOCK_IDS = ['lista-1', 'lista-2'];
+import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
+import { useNotesStore } from '../../../store/notesStore';
 
 export default function ChecklistsListScreen() {
-  const theme = useTheme();
+  const colors = useNoteFlowColors();
+  const checklists = useNotesStore((s) => s.checklists);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLarge" style={{ color: theme.colors.onBackground }}>
-          Checklists
-        </Text>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.xs }}>
-          Listas de tareas por reunión o contexto.
-        </Text>
-        {MOCK_IDS.map((id) => (
-          <List.Item
-            key={id}
-            title={`Checklist ${id}`}
-            description="Toca para abrir detalle"
-            left={(props) => <List.Icon {...props} icon="format-list-checks" />}
-            onPress={() => router.push(`/checklists/${id}`)}
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <FlashList
+        data={checklists}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <ListScreenHeader
+            title="Checklists"
+            onAddPress={() => router.push('/nueva-note')}
           />
-        ))}
-      </ScrollView>
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => router.push('/nueva-note')}
-        accessibilityLabel="Nuevo contenido"
+        }
+        ListEmptyComponent={
+          <ListEmptyState message="Sin listas todavía. Añade una checklist con +." />
+        }
+        renderItem={({ item }) => (
+          <ChecklistCard
+            checklist={item}
+            onPress={() => router.push(`/checklists/${item.id}`)}
+          />
+        )}
       />
     </View>
   );
@@ -40,6 +41,8 @@ export default function ChecklistsListScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: spacing.lg, paddingBottom: 88 },
-  fab: { position: 'absolute', right: spacing.lg, bottom: spacing.lg },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
 });

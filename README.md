@@ -47,6 +47,8 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 | Archivo | Contenido |
 |---------|-----------|
 | `docs/idea.md` | Problema, usuario, funcionalidades |
+| `docs/diseno-ui.md` | **Dirección UI acordada:** mockup minimalista + escala de grises, tarjetas y tokens |
+| `docs/pendiente-ejercicio.md` | **Checklist del curso:** FlashList, Zod, AsyncStorage, UX y entregable (enunciado del tutor) |
 | `docs/react-native-fundamentals.md` | Fundamentos RN del tutor: vistas nativas, hilo JS vs UI, rendimiento y vínculo con NoteFlow |
 | `docs/react-native-teoria.md` | RN vs nativo, Metro, Expo Go, comparativa UI y **sistema de diseño (Paper + tokens)** |
 | `constants/theme.ts` | Tokens (`spacing`, `typography`) y `getNoteFlowPaperTheme` (claro/oscuro) |

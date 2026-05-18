@@ -1,38 +1,39 @@
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { FAB, List, Text, useTheme } from 'react-native-paper';
+import { StyleSheet, View } from 'react-native';
 
+import { IdeaCard } from '../../../components/items/IdeaCard';
+import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { spacing } from '../../../constants/theme';
-
-const MOCK_IDS = ['idea-a', 'idea-b'];
+import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
+import { useNotesStore } from '../../../store/notesStore';
 
 export default function IdeasListScreen() {
-  const theme = useTheme();
+  const colors = useNoteFlowColors();
+  const ideas = useNotesStore((s) => s.ideas);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLarge" style={{ color: theme.colors.onBackground }}>
-          Ideas
-        </Text>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.xs }}>
-          Captura rápida sin estructura fija.
-        </Text>
-        {MOCK_IDS.map((id) => (
-          <List.Item
-            key={id}
-            title={`Idea ${id}`}
-            description="Toca para abrir detalle"
-            left={(props) => <List.Icon {...props} icon="lightbulb-outline" />}
-            onPress={() => router.push(`/ideas/${id}`)}
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <FlashList
+        data={ideas}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <ListScreenHeader
+            title="Ideas"
+            onAddPress={() => router.push('/nueva-note')}
           />
-        ))}
-      </ScrollView>
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => router.push('/nueva-note')}
-        accessibilityLabel="Nuevo contenido"
+        }
+        ListEmptyComponent={
+          <ListEmptyState message="Captura una idea rápida con +." />
+        }
+        renderItem={({ item }) => (
+          <IdeaCard
+            idea={item}
+            onPress={() => router.push(`/ideas/${item.id}`)}
+          />
+        )}
       />
     </View>
   );
@@ -40,6 +41,8 @@ export default function IdeasListScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: spacing.lg, paddingBottom: 88 },
-  fab: { position: 'absolute', right: spacing.lg, bottom: spacing.lg },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
 });

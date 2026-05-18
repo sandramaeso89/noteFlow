@@ -3,7 +3,6 @@ import type { ColorSchemeName } from 'react-native';
 
 /**
  * Escala de espaciados base (múltiplos de 4) para layout y ritmo vertical.
- * Usar estos valores en StyleSheet en lugar de números mágicos sueltos.
  */
 export const spacing = {
   xxs: 2,
@@ -16,10 +15,21 @@ export const spacing = {
   xxxl: 40,
 } as const;
 
+export const radius = {
+  card: 14,
+  pill: 6,
+  button: 24,
+} as const;
+
 /**
- * Escala tipográfica (tamaños en dp). Paper usa su propia escala MD3;
- * estos tokens sirven para Text fuera de Paper o para afinar manualmente.
+ * Alturas orientativas para `estimatedItemSize` en FlashList (ver docs/diseno-ui.md).
  */
+export const listEstimatedItemSize = {
+  note: 148,
+  checklist: 172,
+  idea: 160,
+} as const;
+
 export const typography = {
   fontFamily: {
     regular: 'System',
@@ -41,40 +51,93 @@ export const typography = {
   },
 } as const;
 
-/** Paleta NoteFlow: productividad, tono sobrio, acento violeta */
+/** Tokens de color NoteFlow (mockup minimalista + grises). Ver docs/diseno-ui.md */
+export type NoteFlowColors = {
+  background: string;
+  surface: string;
+  surfaceMuted: string;
+  border: string;
+  borderStrong: string;
+  textPrimary: string;
+  textSecondary: string;
+  textTertiary: string;
+  textDisabled: string;
+  track: string;
+  fill: string;
+  accent: string;
+  error: string;
+};
+
+const colorsLight: NoteFlowColors = {
+  background: '#F2F2F5',
+  surface: '#FFFFFF',
+  surfaceMuted: '#F7F7F9',
+  border: '#E4E4E8',
+  borderStrong: '#C8C8CE',
+  textPrimary: '#141414',
+  textSecondary: '#5C5C63',
+  textTertiary: '#8A8A92',
+  textDisabled: '#B0B0B8',
+  track: '#E0E0E6',
+  fill: '#1A1A1E',
+  accent: '#5B458C',
+  error: '#B3261E',
+};
+
+const colorsDark: NoteFlowColors = {
+  background: '#141416',
+  surface: '#1C1C1E',
+  surfaceMuted: '#252528',
+  border: '#2E2E32',
+  borderStrong: '#3D3D42',
+  textPrimary: '#F2F2F5',
+  textSecondary: '#A8A8B0',
+  textTertiary: '#8A8A92',
+  textDisabled: '#6B6B72',
+  track: '#3D3D42',
+  fill: '#E8E8EC',
+  accent: '#B8A4E8',
+  error: '#F2B8B5',
+};
+
+export function getNoteFlowColors(
+  colorScheme: ColorSchemeName
+): NoteFlowColors {
+  return colorScheme === 'dark' ? colorsDark : colorsLight;
+}
+
 const paletteLight = {
-  primary: '#5B458C',
+  primary: colorsLight.accent,
   onPrimary: '#FFFFFF',
   primaryContainer: '#E8DDFF',
   onPrimaryContainer: '#1E1147',
   secondary: '#625B71',
   onSecondary: '#FFFFFF',
-  background: '#F7F5FB',
-  surface: '#FFFFFF',
-  onSurface: '#1C1B1F',
-  onSurfaceVariant: '#49454E',
-  outline: '#79747E',
-  error: '#B3261E',
+  background: colorsLight.background,
+  surface: colorsLight.surface,
+  onSurface: colorsLight.textPrimary,
+  onSurfaceVariant: colorsLight.textTertiary,
+  outline: colorsLight.borderStrong,
+  error: colorsLight.error,
 };
 
 const paletteDark = {
-  primary: '#D0BCFF',
-  onPrimary: '#381E72',
+  primary: colorsDark.accent,
+  onPrimary: '#1E1147',
   primaryContainer: '#4F378B',
   onPrimaryContainer: '#E8DDFF',
   secondary: '#CCC2DC',
   onSecondary: '#332D41',
-  background: '#121218',
-  surface: '#1C1B20',
-  onSurface: '#E6E1E5',
-  onSurfaceVariant: '#CAC4D0',
-  outline: '#938F99',
-  error: '#F2B8B5',
+  background: colorsDark.background,
+  surface: colorsDark.surface,
+  onSurface: colorsDark.textPrimary,
+  onSurfaceVariant: colorsDark.textTertiary,
+  outline: colorsDark.borderStrong,
+  error: colorsDark.error,
 };
 
 /**
- * Devuelve el tema MD3 de React Native Paper fusionado con los tokens NoteFlow.
- * Pasa el esquema resuelto (`'light' | 'dark'`); si llega `null`, se trata como claro.
+ * Tema MD3 de React Native Paper fusionado con tokens NoteFlow.
  */
 export function getNoteFlowPaperTheme(
   colorScheme: ColorSchemeName

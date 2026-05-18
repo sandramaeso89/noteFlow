@@ -126,6 +126,32 @@ La app usa **una sola** librería de componentes base (**Paper**) más tokens en
 
 ---
 
+## Rendimiento en listas
+
+En NoteFlow las pantallas de **Notas**, **Checklists** e **Ideas** usan [**FlashList**](https://shopify.github.io/flash-list/) (`@shopify/flash-list`) en lugar de `FlatList` cuando la lista puede crecer.
+
+### Reciclaje de componentes
+
+Al hacer scroll, una lista **no debería crear una vista nueva por cada fila** en memoria. El motor **reutiliza** (recicla) un número acotado de celdas: cuando una fila sale de pantalla, su componente se resetea y se asigna a otra fila que entra. Así el uso de memoria y el trabajo del hilo de UI se mantienen estables.
+
+`FlatList` ya recicla, pero con listas largas y scroll rápido a veces aparecen **huecos blancos**: el reciclaje no alcanza a preparar la celda a tiempo. **FlashList** estima tamaños y recicla de forma más agresiva, lo que reduce esos parpadeos.
+
+### Tamaño de filas (`estimatedItemSize`)
+
+En **FlashList 1.x** el enunciado del curso pide `estimatedItemSize`: una altura media aproximada en píxeles **antes** de medir cada celda; cuanto más precisa, mejor el scroll.
+
+En este repo usamos **FlashList 2.x** (Expo SDK 54), que **mide las celdas automáticamente** y ya no expone `estimatedItemSize` en los tipos. Los valores orientativos en `constants/theme.ts` → `listEstimatedItemSize` (nota ~148, checklist ~172, idea ~160) sirven como referencia de altura real de `NoteCard`, `ChecklistCard` e `IdeaCard` al depurar rendimiento.
+
+### Buenas prácticas en NoteFlow
+
+- Mantener las tarjetas **lo más ligeras** posible (evitar animaciones pesadas dentro de cada celda en la primera versión).
+- Usar **`keyExtractor` estable** (`item.id`).
+- Leer del store con **selectores** (`useNotesStore(s => s.notes)`) para no re-renderizar toda la pantalla al cambiar otro slice.
+
+Más contexto de hilos y fluidez: [`react-native-fundamentals.md`](react-native-fundamentals.md). Dirección visual de las tarjetas: [`diseno-ui.md`](diseno-ui.md).
+
+---
+
 ## Relación con el resto de docs del repo
 
 | Tema | Documento |

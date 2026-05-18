@@ -1,38 +1,39 @@
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { FAB, List, Text, useTheme } from 'react-native-paper';
+import { StyleSheet, View } from 'react-native';
 
+import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
+import { NoteCard } from '../../../components/items/NoteCard';
 import { spacing } from '../../../constants/theme';
-
-const MOCK_IDS = ['demo-1', 'demo-2'];
+import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
+import { useNotesStore } from '../../../store/notesStore';
 
 export default function NotasListScreen() {
-  const theme = useTheme();
+  const colors = useNoteFlowColors();
+  const notes = useNotesStore((s) => s.notes);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLarge" style={{ color: theme.colors.onBackground }}>
-          Notas
-        </Text>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.xs }}>
-          Lista de ejemplo; cada ítem enlaza al detalle dinámico.
-        </Text>
-        {MOCK_IDS.map((id) => (
-          <List.Item
-            key={id}
-            title={`Nota ${id}`}
-            description="Toca para abrir detalle"
-            left={(props) => <List.Icon {...props} icon="note-outline" />}
-            onPress={() => router.push(`/notas/${id}`)}
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <FlashList
+        data={notes}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <ListScreenHeader
+            title="Notas"
+            onAddPress={() => router.push('/nueva-note')}
           />
-        ))}
-      </ScrollView>
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => router.push('/nueva-note')}
-        accessibilityLabel="Nuevo contenido"
+        }
+        ListEmptyComponent={
+          <ListEmptyState message="Nada en el radar. Crea tu primera nota con +." />
+        }
+        renderItem={({ item }) => (
+          <NoteCard
+            note={item}
+            onPress={() => router.push(`/notas/${item.id}`)}
+          />
+        )}
       />
     </View>
   );
@@ -40,6 +41,8 @@ export default function NotasListScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: spacing.lg, paddingBottom: 88 },
-  fab: { position: 'absolute', right: spacing.lg, bottom: spacing.lg },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
 });
