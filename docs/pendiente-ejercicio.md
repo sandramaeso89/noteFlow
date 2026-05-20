@@ -161,6 +161,7 @@ Repositorio en GitHub con el proyecto Expo funcional:
 | Store Zustand (base, sin persist aún) + datos demo | `store/notesStore.ts`, `store/seedData.ts`, `docs/gestion-estado.md` |
 | Tokens UI (grises + Paper) | `constants/theme.ts`, `hooks/useNoteFlowColors.ts`, `docs/diseno-ui.md` |
 | Tarjetas + FlashList en pestañas | `components/items/`, `app/(tabs)/*/index.tsx` |
+| Formularios Zod + alta en store | `app/nueva-note.tsx`, `schemas/noteSchemas.ts`, `components/forms/FieldError.tsx` |
 | Expo Router (tabs, stacks, modal) | `app/`, `docs/expo-router-navegacion.md` |
 
 ---
