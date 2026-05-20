@@ -45,6 +45,8 @@ El formulario en `app/nueva-note.tsx` debe adaptarse al tipo:
 npx expo install zod
 ```
 
+- [x] `zod` instalado; schemas en `schemas/noteSchemas.ts`
+
 ### Schemas de validación (ejemplo del enunciado)
 
 ```ts
@@ -56,12 +58,13 @@ const noteSchema = z.object({
 });
 ```
 
-*(Definir también schemas para checklist e idea.)*
+- [x] Schemas para nota, checklist e idea en `schemas/noteSchemas.ts`
+- [x] Formulario adaptado por tipo en `app/nueva-note.tsx` (conectado al store)
 
 ### UX del formulario
 
-- [ ] `KeyboardAvoidingView` con `behavior='padding'` en iOS y `behavior='height'` en Android
-- [ ] Mostrar mensajes de error de Zod **debajo** de cada campo
+- [x] `KeyboardAvoidingView` con `behavior='padding'` en iOS y `behavior='height'` en Android
+- [x] Mostrar mensajes de error de Zod **debajo** de cada campo
 
 ---
 
@@ -143,7 +146,7 @@ Repositorio en GitHub con el proyecto Expo funcional:
 - [x] Librería UI configurada
 - [x] Tres tipos de notas con **tarjetas visualmente distintas** (alineadas con [`diseno-ui.md`](diseno-ui.md))
 - [x] **FlashList** en todas las listas
-- [ ] Formularios con validación **Zod**
+- [x] Formularios con validación **Zod**
 - [x] Estado global con **Zustand**
 - [ ] Persistencia con **AsyncStorage**
 - [ ] `docs/react-native-teoria.md` **completo** (sección listas añadida; revisar resto del enunciado del curso)

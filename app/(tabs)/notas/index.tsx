@@ -22,7 +22,7 @@ export default function NotasListScreen() {
         ListHeaderComponent={
           <ListScreenHeader
             title="Notas"
-            onAddPress={() => router.push('/nueva-note')}
+            onAddPress={() => router.push({ pathname: '/nueva-note', params: { type: 'note' } })}
           />
         }
         ListEmptyComponent={

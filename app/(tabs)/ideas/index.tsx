@@ -22,7 +22,7 @@ export default function IdeasListScreen() {
         ListHeaderComponent={
           <ListScreenHeader
             title="Ideas"
-            onAddPress={() => router.push('/nueva-note')}
+            onAddPress={() => router.push({ pathname: '/nueva-note', params: { type: 'idea' } })}
           />
         }
         ListEmptyComponent={

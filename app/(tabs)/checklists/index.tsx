@@ -22,7 +22,9 @@ export default function ChecklistsListScreen() {
         ListHeaderComponent={
           <ListScreenHeader
             title="Checklists"
-            onAddPress={() => router.push('/nueva-note')}
+            onAddPress={() =>
+              router.push({ pathname: '/nueva-note', params: { type: 'checklist' } })
+            }
           />
         }
         ListEmptyComponent={
