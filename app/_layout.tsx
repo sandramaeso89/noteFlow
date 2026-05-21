@@ -4,6 +4,7 @@ import { Appearance, useColorScheme, type ColorSchemeName } from 'react-native';
 import { PaperProvider, useTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { StoreHydrationGate } from '../components/StoreHydrationGate';
 import { getNoteFlowPaperTheme } from '../constants/theme';
 
 function useResolvedColorScheme(): ColorSchemeName {
@@ -53,7 +54,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <RootNavigator />
+        <StoreHydrationGate>
+          <RootNavigator />
+        </StoreHydrationGate>
       </PaperProvider>
     </SafeAreaProvider>
   );

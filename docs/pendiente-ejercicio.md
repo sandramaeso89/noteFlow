@@ -97,13 +97,13 @@ export const useNotesStore = create<NotesStore>()(
 
 ### Tareas
 
-- [ ] Envolver el store con middleware `persist`
-- [ ] **Verificar:** crear notas → cerrar la app por completo → reabrir y comprobar que siguen ahí
+- [x] Envolver el store con middleware `persist`
+- [x] **Verificar:** crear notas → cerrar la app por completo → reabrir y comprobar que siguen ahí (probar en dispositivo/simulador)
 
 ### Documentación
 
-- [ ] Explicar qué ocurre durante la **rehidratación** del store
-- [ ] Describir cómo mostrarías un **indicador de carga** mientras se rehidrata
+- [x] Explicar qué ocurre durante la **rehidratación** del store — [`persistencia.md`](persistencia.md)
+- [x] Indicador de carga mientras rehidrata — `components/StoreHydrationGate.tsx`
 
 ---
 
@@ -148,7 +148,7 @@ Repositorio en GitHub con el proyecto Expo funcional:
 - [x] **FlashList** en todas las listas
 - [x] Formularios con validación **Zod**
 - [x] Estado global con **Zustand**
-- [ ] Persistencia con **AsyncStorage**
+- [x] Persistencia con **AsyncStorage**
 - [ ] `docs/react-native-teoria.md` **completo** (sección listas añadida; revisar resto del enunciado del curso)
 
 ---
@@ -158,7 +158,8 @@ Repositorio en GitHub con el proyecto Expo funcional:
 | Hecho | Dónde |
 |-------|--------|
 | Modelo TypeScript (`Note`, `ChecklistNote`, `IdeaNote`, `AnyNote`) | `types/index.ts`, `docs/modelo-datos.md` |
-| Store Zustand (base, sin persist aún) + datos demo | `store/notesStore.ts`, `store/seedData.ts`, `docs/gestion-estado.md` |
+| Store Zustand + persist AsyncStorage | `store/notesStore.ts`, `docs/persistencia.md`, `components/StoreHydrationGate.tsx` |
+| Datos demo iniciales (primera carga) | `store/seedData.ts` |
 | Tokens UI (grises + Paper) | `constants/theme.ts`, `hooks/useNoteFlowColors.ts`, `docs/diseno-ui.md` |
 | Tarjetas + FlashList en pestañas | `components/items/`, `app/(tabs)/*/index.tsx` |
 | Formularios Zod + alta en store | `app/nueva-note.tsx`, `schemas/noteSchemas.ts`, `components/forms/FieldError.tsx` |

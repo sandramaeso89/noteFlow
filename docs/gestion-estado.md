@@ -56,7 +56,9 @@ const addNote = useNotesStore((s) => s.addNote);
 - Arrays: `notes`, `checklists`, `ideas`.
 - `addNote`, `deleteNote`, `toggleChecklistItem` (marcar ítem de checklist).
 
-Ampliaciones previstas: `addChecklist`, `addIdea`, borrado por tipo, `updatedAt` al editar, persistencia con `persist` de Zustand.
+**Persistencia:** middleware `persist` + AsyncStorage — ver [`persistencia.md`](persistencia.md).
+
+Ampliaciones previstas: borrado por tipo, `updatedAt` al editar, edición en detalle.
 
 ## Por qué Zustand en NoteFlow
 

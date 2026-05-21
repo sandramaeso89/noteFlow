@@ -23,7 +23,9 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 **UI y listas (hecho):** tokens en [`constants/theme.ts`](constants/theme.ts) según [`docs/diseno-ui.md`](docs/diseno-ui.md); tarjetas `NoteCard` / `ChecklistCard` / `IdeaCard`; **FlashList** en las tres pestañas; cabecera con botón **+**.
 
-**Estado y formularios (hecho):** store **Zustand** en [`store/notesStore.ts`](store/notesStore.ts); modal **`/nueva-note`** con formulario por tipo (nota / checklist / idea), validación **Zod** en [`schemas/noteSchemas.ts`](schemas/noteSchemas.ts) y guardado en el store. Pendiente del curso: [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
+**Estado y formularios (hecho):** store **Zustand** en [`store/notesStore.ts`](store/notesStore.ts); modal **`/nueva-note`** con formulario por tipo, validación **Zod** y guardado en el store.
+
+**Persistencia (hecho):** datos en **AsyncStorage** (`noteflow-storage`); rehidratación y pantalla de carga en [`docs/persistencia.md`](docs/persistencia.md). Pendiente del curso: [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
 
 `create-expo-app` no permite mezclar con archivos existentes; antes del scaffold inicial se movieron temporalmente `.cursor/`, `.cursorrules` y `README.md` y luego se restauraron.
 
@@ -44,7 +46,7 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 - **FlashList** — listas en las pestañas (ver sección *Rendimiento en listas* en [`docs/react-native-teoria.md`](docs/react-native-teoria.md)).
 - **Zustand** — estado global en `store/notesStore.ts`.
 - **Zod** — validación de formularios en `schemas/noteSchemas.ts`.
-- **Persistencia local** — pendiente (`AsyncStorage` + middleware `persist` en Zustand).
+- **Persistencia local** — `AsyncStorage` + `persist` en Zustand; ver [`docs/persistencia.md`](docs/persistencia.md).
 - **Sistema de diseño** — tokens en [`constants/theme.ts`](constants/theme.ts); UI con **React Native Paper** (MD3) y tema claro/oscuro según sistema. Detalle y justificación: [`docs/react-native-teoria.md`](docs/react-native-teoria.md) (sección *Sistemas de diseño*).
 
 ## Documentación
@@ -56,6 +58,7 @@ Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simula
 | `docs/pendiente-ejercicio.md` | **Checklist del curso:** qué está hecho y qué falta (FlashList, Zod, AsyncStorage, UX) |
 | `docs/modelo-datos.md` | Tipos `Note`, `ChecklistNote`, `IdeaNote`, `AnyNote` y type guards |
 | `docs/gestion-estado.md` | Comparativa useState / Context / Zustand |
+| `docs/persistencia.md` | AsyncStorage, rehidratación e indicador de carga |
 | `schemas/noteSchemas.ts` | Schemas Zod del formulario de alta |
 | `docs/react-native-fundamentals.md` | Fundamentos RN del tutor: vistas nativas, hilo JS vs UI, rendimiento y vínculo con NoteFlow |
 | `docs/react-native-teoria.md` | RN vs nativo, Metro, Expo Go, comparativa UI y **sistema de diseño (Paper + tokens)** |
