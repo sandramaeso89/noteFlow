@@ -1,3 +1,5 @@
+import 'react-native-reanimated';
+
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Appearance, useColorScheme, type ColorSchemeName } from 'react-native';

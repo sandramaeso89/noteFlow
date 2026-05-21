@@ -1,3 +1,4 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { spacing } from '../../constants/theme';
@@ -18,7 +19,10 @@ export function NoteCard({ note, onPress }: NoteCardProps) {
   return (
     <CardShell
       label="NOTA"
-      leftAccessory={<View style={[styles.dot, { backgroundColor: colors.accent }]} />}
+      showAccentBar
+      leftAccessory={
+        <View style={[styles.dot, { backgroundColor: colors.accent }]} />
+      }
       title={note.title}
       onPress={onPress}
       footer={
@@ -26,12 +30,16 @@ export function NoteCard({ note, onPress }: NoteCardProps) {
           <Text style={[styles.meta, { color: colors.textTertiary }]}>
             {formatNoteCardDate(note.updatedAt)}
           </Text>
-          <Text style={{ color: colors.textDisabled }}>›</Text>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={22}
+            color={colors.textDisabled}
+          />
         </>
       }
     >
-      <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={2}>
-        {truncate(note.content)}
+      <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={1}>
+        {truncate(note.content, 64)}
       </Text>
     </CardShell>
   );

@@ -54,11 +54,16 @@ const addNote = useNotesStore((s) => s.addNote);
 **Store actual** (`store/notesStore.ts`):
 
 - Arrays: `notes`, `checklists`, `ideas`.
-- `addNote`, `deleteNote`, `toggleChecklistItem` (marcar ítem de checklist).
+- Alta: `addNote`, `addChecklist`, `addIdea`.
+- Archivar / restaurar: `archive*` / `unarchive*` por tipo.
+- Borrado definitivo: `delete*` (desde Archivo o menú en ítem archivado).
+- Checklist: `toggleChecklistItem` (actualiza `updatedAt` del padre).
 
-**Persistencia:** middleware `persist` + AsyncStorage — ver [`persistencia.md`](persistencia.md).
+**Persistencia:** middleware `persist` + AsyncStorage (`noteflow-storage`) — ver [`persistencia.md`](persistencia.md).
 
-Ampliaciones previstas: borrado por tipo, `updatedAt` al editar, edición en detalle.
+**Hidratación:** `_hasHydrated` + `StoreHydrationGate` bloquean la UI hasta leer disco.
+
+Posibles ampliaciones futuras: edición inline en detalle, sincronización en nube.
 
 ## Por qué Zustand en NoteFlow
 

@@ -8,7 +8,7 @@ Las interfaces viven en [`types/index.ts`](../types/index.ts). Resumen del domin
 | Checklist | `ChecklistNote` | `items: ChecklistItem[]` |
 | Idea | `IdeaNote` | `tags: string[]`, `color: string` |
 
-Todas comparten `BaseNote`: `id`, `title`, `createdAt`, `updatedAt`.
+Todas comparten `BaseNote`: `id`, `title`, `createdAt`, `updatedAt`, y opcionalmente **`isArchived?: boolean`** (soft-delete: oculta de listas activas, visible en pestaña Archivo).
 
 ## Unión `AnyNote`
 
@@ -81,4 +81,9 @@ Cada variante define un campo **exclusivo** (`content`, `items`, `tags`). Si `'i
 
 ## Relación con el producto
 
-En [`idea.md`](idea.md) el dominio habla de reuniones, acciones y referencias. En la UI del curso las pestañas son **Notas**, **Checklists** e **Ideas**; este modelo de tipos sigue esas tres colecciones hasta alinear nombres con el store.
+En [`idea.md`](idea.md) el dominio habla de reuniones, acciones y referencias. En la UI del curso las pestañas son **Notas**, **Checklists** e **Ideas**, más **Archivo** para ítems con `isArchived: true`. El store mantiene tres arrays (`notes`, `checklists`, `ideas`); no hay un cuarto tipo, solo filtro por bandera.
+
+## Store y persistencia
+
+- Alta y edición vía `store/notesStore.ts` (Zustand).
+- Solo los tres arrays se persisten en AsyncStorage; ver [`persistencia.md`](persistencia.md).

@@ -1,65 +1,75 @@
 # Expo Router en NoteFlow: Tabs, Stack y modal
 
-Este documento describe **cómo está montada la navegación** en la app y **por qué** se combinan un **Stack raíz**, **Tabs** como carcasa principal y una ruta **modal** para crear contenido.
+Cómo está montada la **navegación** y por qué se combinan Stack raíz, Tabs, Stacks por pestaña y una ruta modal.
 
 ## Resumen visual
 
 ```text
 Stack (raíz, `app/_layout.tsx`)
-├── index          → redirección a `/notas`
-├── (tabs)         → barra inferior: Notas | Checklists | Ideas
+├── index          → Redirect a `/notas`
+├── (tabs)         → barra inferior: Notas | Checklists | Ideas | Archivo
 │   ├── notas      → Stack: lista + `/notas/[id]`
 │   ├── checklists → Stack: lista + `/checklists/[id]`
-│   └── ideas      → Stack: lista + `/ideas/[id]`
-└── nueva-note     → modal (`presentation: 'modal'`) para alta rápida
+│   ├── ideas      → Stack: lista + `/ideas/[id]`
+│   └── archivadas → Stack: lista mezclada + mismos detalles por tipo
+└── nueva-note     → modal (`presentation: 'modal'`)
 ```
 
-Los **grupos entre paréntesis** `(tabs)` no aparecen en la URL: las rutas públicas son `/notas`, `/checklists`, `/ideas`, etc.
+Los grupos `(tabs)` **no** aparecen en la URL: rutas públicas `/notas`, `/checklists`, `/ideas`, `/archivadas`.
 
 ## Stack (raíz)
 
-**Qué es:** una pila global que envuelve toda la app y decide qué pantallas son “hermanas” al nivel superior.
+Envuelve la app. Oculta cabecera en `index` y `(tabs)`; cabeceras en stacks internos y en el modal. `StoreHydrationGate` y `PaperProvider` viven aquí.
 
-**En NoteFlow:** el Stack raíz oculta la cabecera en `index` y en `(tabs)` para que no haya doble barra; la cabecera la aportan los **Stacks internos** de cada pestaña y el **modal** tiene la suya propia. El modal se declara aquí con `presentation: 'modal'` para el comportamiento nativo de hoja que se cierra encima del resto.
+Rutas fuera de tabs: modal de alta y futuras pantallas globales (ajustes, etc.).
 
-**Por qué no solo Tabs:** necesitamos rutas que **no** son pestañas (por ejemplo el modal de creación) y, más adelante, otras rutas globales (ajustes, búsqueda, etc.) sin meterlas en la barra inferior.
+## Tabs (cuatro pestañas)
 
-## Tabs
+`app/(tabs)/_layout.tsx`:
 
-**Qué es:** tres destinos fijos con **tab bar** inferior; el usuario cambia de “ámbito” (notas vs listas vs ideas) con un toque.
+| Pestaña | Ruta base | Contenido |
+|---------|-----------|-----------|
+| Notas | `/notas` | Lista `Note` activas |
+| Checklists | `/checklists` | Lista `ChecklistNote` activas |
+| Ideas | `/ideas` | Lista `IdeaNote` activas |
+| Archivo | `/archivadas` | Mezcla archivadas (las tres colecciones) |
 
-**En NoteFlow:** `app/(tabs)/_layout.tsx` define las tres pestañas e iconos con **`@expo/vector-icons`** (`MaterialCommunityIcons`), alineados con el lenguaje visual de Material (coherente con **React Native Paper**).
-
-**Por qué Tabs:** coincide con el modelo mental del producto: tres **colecciones** distintas que conviven; la barra da **orientación** y acceso en un gesto.
+Iconos: `MaterialCommunityIcons`, coherente con Paper.
 
 ## Stack (dentro de cada pestaña)
 
-**Qué es:** dentro de cada pestaña, un Stack propio (`notas/_layout.tsx`, etc.) apila la **lista** y el **detalle** `[id]`.
+Cada sección tiene `_layout.tsx` con Stack: **lista** (`index.tsx`) → **detalle** (`[id].tsx`).
 
-**En NoteFlow:** desde la lista se navega a `/notas/demo-1` (y análogos en checklists e ideas); el botón atrás del sistema y la cabecera se comportan como en apps nativas.
+Desde archivo, al pulsar una tarjeta se navega al detalle de su tipo (`/notas/[id]`, etc.).
 
-**Por qué no solo rutas planas:** el detalle debe **apilar** sobre la lista, no reemplazar la pestaña entera; un Stack por sección es el patrón habitual en Expo Router / React Navigation.
+## Modal `nueva-note`
 
-## Modal (`nueva-note`)
+`app/nueva-note.tsx` — presentación modal desde el Stack raíz.
 
-**Qué es:** una pantalla presentada como **modal** desde el Stack raíz (`app/nueva-note.tsx`).
+- Abierto con `router.push({ pathname: '/nueva-note', params: { type: 'note' | 'checklist' | 'idea' } })`.
+- Formulario por tipo, validación **Zod**, guardado en **Zustand** (y persistencia automática).
 
-**En NoteFlow:** el FAB “+” en cada lista hace `router.push('/nueva-note')`. Es un **placeholder** de formulario hasta conectar Zustand y persistencia.
+## Detalle y acciones
 
-**Por qué modal y no otra pestaña:** la creación es una **acción transitoria** que interrumpe poco el contexto y se cierra con guardar o cancelar; no merece un quinto tab ni mezclarse con la pila del detalle.
+Pantallas `[id].tsx`:
+
+- Datos desde `useNotesStore`.
+- Menú **⋮** (`components/detail/DetailHeaderMenu.tsx`): archivar (activas), restaurar + eliminar definitivo (archivadas).
+- Checklist: `ChecklistItemRow` + toggle en store.
 
 ## Archivos clave
 
 | Ruta | Rol |
 |------|-----|
-| `app/_layout.tsx` | Stack raíz, tema Paper, pantallas `index`, `(tabs)`, `nueva-note` |
-| `app/index.tsx` | `Redirect` a `/notas` |
-| `app/(tabs)/_layout.tsx` | Tabs + iconos |
-| `app/(tabs)/notas/_layout.tsx` (y checklists, ideas) | Stack por sección |
-| `app/(tabs)/notas/index.tsx`, `[id].tsx` | Lista y detalle dinámico |
-| `app/nueva-note.tsx` | Modal de alta |
+| `app/_layout.tsx` | Stack raíz, Paper, hidratación, `nueva-note` |
+| `app/index.tsx` | Redirect → `/notas` |
+| `app/(tabs)/_layout.tsx` | Cuatro tabs |
+| `app/(tabs)/*/index.tsx` | FlashList + `ListScreenHeader` |
+| `app/(tabs)/*/[id].tsx` | Detalle |
+| `app/(tabs)/archivadas/index.tsx` | Lista unificada archivadas |
+| `app/nueva-note.tsx` | Modal alta |
 
-## Enlaces útiles
+## Enlaces
 
 - [Expo Router — introduction](https://docs.expo.dev/router/introduction/)
 - [Layout routes](https://docs.expo.dev/router/basics/layout/)

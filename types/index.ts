@@ -10,6 +10,8 @@ export interface BaseNote {
   title: string;
   createdAt: Date;
   updatedAt: Date;
+  /** Si true, no aparece en pestañas activas; solo en Archivadas. */
+  isArchived?: boolean;
 }
 
 /** Nota de texto libre (pestaña Notas / reuniones). */

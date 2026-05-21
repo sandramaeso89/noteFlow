@@ -63,7 +63,7 @@ UI **moderna, minimalista y profesional** (pro / urban editorial en clave **mono
 
 ### Estado actual del repo (última documentación)
 
-**Fase inicial:** existe documentación de producto (`docs/idea.md`, `docs/react-native-fundamentals.md`, `docs/react-native-teoria.md`, `docs/expo-go-vs-development-build.md`, `README.md`). **Scaffold Expo (paso 1 del curso) aplicado** en la raíz. **Expo Router (paso 2)** configurado: `main` → `expo-router/entry`, `scheme` → `noteflow`, carpetas `app/`, `components/`, `store/`, `types/`, `constants/`. No asumas rutas que aún no existan en el árbol.
+**Entregable del curso implementado:** Expo SDK 54, cuatro tabs (Notas / Checklists / Ideas / Archivo), FlashList, tarjetas distintas, Zustand + persist AsyncStorage, Zod en `nueva-note`, Paper + tokens, UX (búsqueda, archivar, haptics, Reanimated). Documentación alineada en `README.md` y `docs/`. Inspecciona el árbol antes de citar rutas; no asumas archivos que no existan.
 
 ---
 

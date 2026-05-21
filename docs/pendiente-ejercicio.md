@@ -1,109 +1,67 @@
 # Pendiente del ejercicio (enunciado del tutor)
 
-Checklist de lo que falta por hacer en NoteFlow. Texto basado en el enunciado del curso.  
-**Dirección visual acordada:** [`diseno-ui.md`](diseno-ui.md) y [`design-reference-mockup.png`](design-reference-mockup.png).
+Checklist de NoteFlow frente al enunciado del curso.  
+**Dirección visual:** [`diseno-ui.md`](diseno-ui.md) y [`design-reference-mockup.png`](design-reference-mockup.png).
+
+**Estado global:** entregable técnico **completo** en código y documentación. Solo queda verificación **manual** en simulador (abajo).
 
 ---
 
 ## 1. Listas de alto rendimiento con FlashList
 
-`FlatList` tiene un problema conocido con listas largas: el reciclaje de componentes no es eficiente y aparecen pantallas en blanco al hacer scroll rápido. **FlashList** de Shopify lo resuelve reciclando componentes de forma más agresiva.
-
 ```bash
 npx expo install @shopify/flash-list
 ```
 
-La propiedad **`estimatedItemSize`** le indica a FlashList cuánto espacio ocupará cada elemento antes de renderizarlo. Cuanto más preciso sea el valor, mejor será el rendimiento.
+En **FlashList 2.x** (Expo SDK 54) no hace falta `estimatedItemSize` en tipos; ver [`react-native-teoria.md`](react-native-teoria.md) (*Rendimiento en listas*).
 
 ### Componentes de tarjeta
 
-- [x] `components/items/NoteCard.tsx` — título, comienzo del contenido y fecha
-- [x] `components/items/ChecklistCard.tsx` — título, tareas completadas y barra de progreso
-- [x] `components/items/IdeaCard.tsx` — título, etiquetas como chips y color de fondo
+- [x] `components/items/NoteCard.tsx` — barra acento, preview, fecha
+- [x] `components/items/ChecklistCard.tsx` — barra de progreso, fracción tabular
+- [x] `components/items/IdeaCard.tsx` — tags rectangulares, tinte por `color`
 
 ### Pantallas
 
-- [x] Usar **FlashList** en cada pantalla de pestaña (`notas`, `checklists`, `ideas`)
+- [x] **FlashList** en `notas`, `checklists`, `ideas` y **`archivadas`**
 
 ### Documentación
 
-- [x] Añadir sección **«Rendimiento en listas»** (reciclaje de componentes) — en `docs/react-native-teoria.md`
+- [x] Sección **«Rendimiento en listas»** en `docs/react-native-teoria.md`
 
 ---
 
 ## 2. Formularios y validación con Zod
 
-El formulario en `app/nueva-note.tsx` debe adaptarse al tipo:
-
-| Tipo | UI |
-|------|-----|
-| **Note** | Título y área de texto |
-| **ChecklistNote** | Campo dinámico para añadir ítems |
-| **IdeaNote** | Selector de color y campo para etiquetas |
-
 ```bash
 npx expo install zod
 ```
 
-- [x] `zod` instalado; schemas en `schemas/noteSchemas.ts`
+| Tipo | UI |
+|------|-----|
+| **Note** | Título y área de texto |
+| **ChecklistNote** | Ítems dinámicos |
+| **IdeaNote** | Color y etiquetas |
 
-### Schemas de validación (ejemplo del enunciado)
-
-```ts
-import { z } from 'zod';
-
-const noteSchema = z.object({
-  title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
-  content: z.string().min(1, 'El contenido no puede estar vacío'),
-});
-```
-
-- [x] Schemas para nota, checklist e idea en `schemas/noteSchemas.ts`
-- [x] Formulario adaptado por tipo en `app/nueva-note.tsx` (conectado al store)
-
-### UX del formulario
-
-- [x] `KeyboardAvoidingView` con `behavior='padding'` en iOS y `behavior='height'` en Android
-- [x] Mostrar mensajes de error de Zod **debajo** de cada campo
+- [x] `schemas/noteSchemas.ts` (nota, checklist, idea)
+- [x] `app/nueva-note.tsx` conectado al store
+- [x] `KeyboardAvoidingView` iOS/Android
+- [x] Errores Zod debajo de cada campo (`FieldError`)
 
 ---
 
 ## 3. Persistencia con AsyncStorage
 
-AsyncStorage permite guardar datos en el dispositivo.
-
-**Limitaciones:** no tiene cifrado, tiene límite de tamaño y los datos solo están en ese dispositivo.
-
 ```bash
 npx expo install @react-native-async-storage/async-storage
 ```
 
-### Integración en Zustand
+- [x] Middleware `persist` en `store/notesStore.ts` (`noteflow-storage`)
+- [x] Reviver de fechas (`utils/storeSerialization.ts`)
+- [x] `StoreHydrationGate` en `app/_layout.tsx`
+- [x] Documentación en [`persistencia.md`](persistencia.md)
 
-```ts
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export const useNotesStore = create<NotesStore>()(
-  persist(
-    (set) => ({ /* acciones */ }),
-    {
-      name: 'noteflow-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
-);
-```
-
-### Tareas
-
-- [x] Envolver el store con middleware `persist`
-- [x] **Verificar:** crear notas → cerrar la app por completo → reabrir y comprobar que siguen ahí (probar en dispositivo/simulador)
-
-### Documentación
-
-- [x] Explicar qué ocurre durante la **rehidratación** del store — [`persistencia.md`](persistencia.md)
-- [x] Indicador de carga mientras rehidrata — `components/StoreHydrationGate.tsx`
+**Verificación manual recomendada:** crear nota → cerrar app por completo → reabrir → debe seguir ahí.
 
 ---
 
@@ -113,29 +71,27 @@ export const useNotesStore = create<NotesStore>()(
 npx expo install expo-haptics
 ```
 
-Las vibraciones táctiles elevan la percepción de calidad.
+- [x] `utils/haptics.ts`
+- [x] Haptic al archivar / eliminar definitivo (`confirmActions.ts`)
+- [x] Haptic al marcar ítem de checklist; éxito al completar todos
+- [x] Detalle `[id].tsx` × 3 con menú **⋮** (`DetailHeaderMenu`)
+- [x] `ChecklistItemRow` en detalle de checklist
+- [x] Estados vacíos con icono y CTA en Notas / Checklists / Ideas
+- [x] Token `cardBorder` (1,5px) en **tarjetas** y vacíos; cabecera de lista **sin** panel tarjeta
+- [x] `ENABLE_STRESS_SEED` en `store/seedData.ts` (auditoría scroll)
 
-- [ ] `Haptics.impactAsync(ImpactFeedbackStyle.Light)` al **eliminar** una nota
-- [ ] `Haptics.notificationAsync(NotificationFeedbackType.Success)` al **completar todos** los ítems de un checklist
+### Auditoría en simulador (manual)
 
-### Detalle y listas
-
-- [x] Navegación al pulsar tarjeta → `[id].tsx` (ya enlazado desde listas; falta contenido rico en detalle)
-- [ ] **Eliminar** con `Alert.alert` de confirmación
-- [x] **Estado vacío** básico en cada pestaña cuando no hay contenido
-
-### Auditoría en simulador
-
-- [ ] Sin caídas de FPS con **50+ ítems** en cada lista
-- [ ] Tema **oscuro y claro** correcto en todos los componentes
+- [ ] FPS con seed de estrés y scroll rápido
+- [ ] Tema claro/oscuro en listas, detalle, archivo y búsqueda
 
 ---
 
-## 5. Extensión natural de la fase (opcional)
+## 5. Extensión natural (opcional — hecho)
 
-- [ ] **Búsqueda global:** input en la cabecera de cada pestaña que filtre en tiempo real
-- [ ] **Animaciones:** envolver tarjetas con `Animated.View` de Reanimated — entrada `FadeInDown`, salida `FadeOutLeft`
-- [ ] **Archivar** notas en lugar de eliminar definitivamente + pestaña de archivadas
+- [x] Búsqueda (`ListScreenHeader` + `utils/filters.ts`)
+- [x] Reanimated (`AnimatedCardWrapper`)
+- [x] Archivar + pestaña **Archivo** (`archivadas/`, `isArchived`)
 
 ---
 
@@ -144,27 +100,27 @@ Las vibraciones táctiles elevan la percepción de calidad.
 Repositorio en GitHub con el proyecto Expo funcional:
 
 - [x] Librería UI configurada
-- [x] Tres tipos de notas con **tarjetas visualmente distintas** (alineadas con [`diseno-ui.md`](diseno-ui.md))
+- [x] Tres tipos de notas con **tarjetas visualmente distintas**
 - [x] **FlashList** en todas las listas
 - [x] Formularios con validación **Zod**
 - [x] Estado global con **Zustand**
 - [x] Persistencia con **AsyncStorage**
-- [ ] `docs/react-native-teoria.md` **completo** (sección listas añadida; revisar resto del enunciado del curso)
+- [x] `docs/react-native-teoria.md` **completo**
 
 ---
 
-## Ya hecho en el repo (referencia)
+## Referencia rápida en el repo
 
-| Hecho | Dónde |
-|-------|--------|
-| Modelo TypeScript (`Note`, `ChecklistNote`, `IdeaNote`, `AnyNote`) | `types/index.ts`, `docs/modelo-datos.md` |
-| Store Zustand + persist AsyncStorage | `store/notesStore.ts`, `docs/persistencia.md`, `components/StoreHydrationGate.tsx` |
-| Datos demo iniciales (primera carga) | `store/seedData.ts` |
-| Tokens UI (grises + Paper) | `constants/theme.ts`, `hooks/useNoteFlowColors.ts`, `docs/diseno-ui.md` |
-| Tarjetas + FlashList en pestañas | `components/items/`, `app/(tabs)/*/index.tsx` |
-| Formularios Zod + alta en store | `app/nueva-note.tsx`, `schemas/noteSchemas.ts`, `components/forms/FieldError.tsx` |
-| Expo Router (tabs, stacks, modal) | `app/`, `docs/expo-router-navegacion.md` |
+| Área | Dónde |
+|------|--------|
+| Tipos | `types/index.ts`, `docs/modelo-datos.md` |
+| Store + persist | `store/notesStore.ts`, `docs/persistencia.md` |
+| UI / tokens | `constants/theme.ts`, `docs/diseno-ui.md` |
+| Tarjetas + listas | `components/items/`, `app/(tabs)/*/index.tsx` |
+| Formularios | `app/nueva-note.tsx`, `schemas/noteSchemas.ts` |
+| UX detalle / archivo | `components/detail/`, `utils/haptics.ts`, `archivadas/` |
+| Navegación | `app/`, `docs/expo-router-navegacion.md` |
 
 ---
 
-*Actualiza las casillas `- [ ]` → `- [x]` conforme completes cada ítem.*
+*Última revisión: entregable de curso cerrado en repo; casillas abiertas = solo pruebas manuales en dispositivo.*

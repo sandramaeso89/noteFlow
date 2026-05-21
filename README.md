@@ -15,67 +15,100 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 ## Estado del proyecto
 
-**Paso 1 (curso) hecho:** proyecto Expo creado en la **raíz de este repositorio** con `create-expo-app` plantilla **blank-typescript** (SDK Expo 54).
+**Entregable del curso (Expo funcional):** completado en este repositorio.
 
-**Paso 2 (curso) hecho:** `expo-router` y dependencias de navegación instaladas con `expo install`; `package.json` usa **`main`: `expo-router/entry`**; en `app.json` hay **`scheme`: `noteflow`** (deep links tipo `noteflow://`). Carpetas **`app/`**, **`components/`**, **`store/`**, **`types/`**, **`constants/`** creadas; entrada en **`app/_layout.tsx`** y **`app/index.tsx`**. `babel.config.js` usa **`babel-preset-expo`** (preset de Expo; el plugin antiguo `expo-router/babel` ya no aplica en SDK recientes).
+| Requisito | Estado | Dónde |
+|-----------|--------|--------|
+| Librería UI (React Native Paper + tokens) | Hecho | `app/_layout.tsx`, `constants/theme.ts` |
+| Tres tipos con tarjetas distintas | Hecho | `NoteCard`, `ChecklistCard`, `IdeaCard` |
+| FlashList en todas las listas | Hecho | 4 pestañas (`notas`, `checklists`, `ideas`, `archivadas`) |
+| Formularios + Zod | Hecho | `app/nueva-note.tsx`, `schemas/noteSchemas.ts` |
+| Zustand | Hecho | `store/notesStore.ts` |
+| AsyncStorage + persist | Hecho | `docs/persistencia.md`, `StoreHydrationGate` |
+| Documentación de teoría RN | Hecho | `docs/react-native-teoria.md` |
 
-**Navegación NoteFlow:** pestañas **Notas / Checklists / Ideas**, detalle dinámico `[id]` por sección y modal **`/nueva-note`**; detalle en [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
+**Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
-**UI y listas (hecho):** tokens en [`constants/theme.ts`](constants/theme.ts) según [`docs/diseno-ui.md`](docs/diseno-ui.md); tarjetas `NoteCard` / `ChecklistCard` / `IdeaCard`; **FlashList** en las tres pestañas; cabecera con botón **+**.
+**UI:** tokens minimalistas + grises ([`docs/diseno-ui.md`](docs/diseno-ui.md)); tarjetas con borde `cardBorder` (1,5px); cabecera de lista **sin panel** (título + búsqueda + **+** sobre el fondo).
 
-**Estado y formularios (hecho):** store **Zustand** en [`store/notesStore.ts`](store/notesStore.ts); modal **`/nueva-note`** con formulario por tipo, validación **Zod** y guardado en el store.
+**UX:** menú ⋮ en detalle (archivar / restaurar / eliminar definitivo), búsqueda, estados vacíos con CTA, haptics, animaciones Reanimated en listas.
 
-**Persistencia (hecho):** datos en **AsyncStorage** (`noteflow-storage`); rehidratación y pantalla de carga en [`docs/persistencia.md`](docs/persistencia.md). Pendiente del curso: [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
-
-`create-expo-app` no permite mezclar con archivos existentes; antes del scaffold inicial se movieron temporalmente `.cursor/`, `.cursorrules` y `README.md` y luego se restauraron.
-
-La configuración de **herramientas de IA** sigue en [`docs/ai-setup.md`](docs/ai-setup.md).
+**Pendiente solo manual (tutor):** auditoría FPS y tema claro/oscuro en simulador — [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
 
 ## Arranque local
 
 ```bash
+npm install
 npm start
 ```
 
-Equivalente: `npx expo start`. Luego escanea el QR con **Expo Go** o abre simulador (teclas `i` / `a` en la CLI de Expo según entorno).
+Equivalente: `npx expo start`. Tras instalar dependencias nuevas o si Metro falla con Reanimated:
 
-## Stack previsto (curso)
+```bash
+npx expo start -c
+```
 
-- **React Native** + **Expo** — app nativa con flujo ágil. Fundamentos (hilos JS/UI): [`docs/react-native-fundamentals.md`](docs/react-native-fundamentals.md). Teoría (Metro, RN vs nativo, UI Gluestack vs Paper): [`docs/react-native-teoria.md`](docs/react-native-teoria.md). **Expo Go** vs **Development Build**: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
-- **Expo Router** — navegación basada en archivos y layouts; arquitectura Tabs + Stack + modal: [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
-- **FlashList** — listas en las pestañas (ver sección *Rendimiento en listas* en [`docs/react-native-teoria.md`](docs/react-native-teoria.md)).
-- **Zustand** — estado global en `store/notesStore.ts`.
-- **Zod** — validación de formularios en `schemas/noteSchemas.ts`.
-- **Persistencia local** — `AsyncStorage` + `persist` en Zustand; ver [`docs/persistencia.md`](docs/persistencia.md).
-- **Sistema de diseño** — tokens en [`constants/theme.ts`](constants/theme.ts); UI con **React Native Paper** (MD3) y tema claro/oscuro según sistema. Detalle y justificación: [`docs/react-native-teoria.md`](docs/react-native-teoria.md) (sección *Sistemas de diseño*).
+Luego escanea el QR con **Expo Go** o abre simulador (`i` / `a` en la CLI).
+
+## Stack implementado
+
+- **React Native** + **Expo SDK 54** — [`docs/react-native-fundamentals.md`](docs/react-native-fundamentals.md), [`docs/react-native-teoria.md`](docs/react-native-teoria.md)
+- **Expo Router** — [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md)
+- **React Native Paper** (MD3) + tokens en `constants/theme.ts`
+- **FlashList** — `@shopify/flash-list`
+- **Zustand** + **persist** → AsyncStorage (`noteflow-storage`)
+- **Zod** — validación en alta
+- **expo-haptics**, **react-native-reanimated**, **react-native-worklets** (peer de Reanimated 4)
+
+**Expo Go** vs **Development Build:** [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
+
+## Estructura del código (resumen)
+
+```text
+app/
+  _layout.tsx          # PaperProvider, StoreHydrationGate, Stack raíz
+  nueva-note.tsx       # Modal alta (Zod + store)
+  (tabs)/
+    notas|checklists|ideas|archivadas/
+      index.tsx        # FlashList + ListScreenHeader
+      [id].tsx         # Detalle + DetailHeaderMenu
+components/
+  items/               # Tarjetas y AnimatedCardWrapper
+  list/                # Cabecera, vacíos
+  detail/              # Menú detalle, filas checklist
+  forms/               # FieldError
+store/notesStore.ts    # Zustand + persist
+schemas/noteSchemas.ts
+types/index.ts
+utils/                 # haptics, confirmActions, filters, …
+```
 
 ## Documentación
 
 | Archivo | Contenido |
 |---------|-----------|
 | `docs/idea.md` | Problema, usuario, funcionalidades |
-| `docs/diseno-ui.md` | **Dirección UI acordada:** mockup minimalista + escala de grises, tarjetas y tokens |
-| `docs/pendiente-ejercicio.md` | **Checklist del curso:** qué está hecho y qué falta (FlashList, Zod, AsyncStorage, UX) |
-| `docs/modelo-datos.md` | Tipos `Note`, `ChecklistNote`, `IdeaNote`, `AnyNote` y type guards |
-| `docs/gestion-estado.md` | Comparativa useState / Context / Zustand |
-| `docs/persistencia.md` | AsyncStorage, rehidratación e indicador de carga |
-| `schemas/noteSchemas.ts` | Schemas Zod del formulario de alta |
-| `docs/react-native-fundamentals.md` | Fundamentos RN del tutor: vistas nativas, hilo JS vs UI, rendimiento y vínculo con NoteFlow |
-| `docs/react-native-teoria.md` | RN vs nativo, Metro, Expo Go, comparativa UI y **sistema de diseño (Paper + tokens)** |
-| `constants/theme.ts` | Tokens (`spacing`, `typography`) y `getNoteFlowPaperTheme` (claro/oscuro) |
-| `docs/expo-go-vs-development-build.md` | Expo Go vs Development Build (EAS): cuándo usar cada uno (curso) |
-| `docs/expo-router-navegacion.md` | Tabs vs Stack vs modal en NoteFlow y archivos de rutas (`app/`) |
-| `docs/project-management.md` | Trello: columnas, flujo de trabajo y tarjetas/subtareas sugeridas |
-| `docs/ai-setup.md` | Configuración de IA (Cursor, Gemini, Claude, otras) y por qué |
-| `.cursorrules` | Reglas de contexto en raíz para Cursor: stack RN+TS, estilo, restricciones |
-| `.cursor/skills/noteflow/SKILL.md` | Skill de Cursor del repo: cómo trabaja el asistente con Sandra (mentoría, reglas, stack NoteFlow) |
-| `.cursor/skills/noteflow/reference.md` | Referencia complementaria (alcance v1, a11y, RGPD/web si aplica más adelante) |
+| `docs/diseno-ui.md` | Mockup, tokens, tarjetas NOTA / CHECKLIST / IDEA |
+| `docs/pendiente-ejercicio.md` | Checklist del curso (casi todo `[x]`) |
+| `docs/modelo-datos.md` | Tipos, `AnyNote`, type guards, `isArchived` |
+| `docs/gestion-estado.md` | useState / Context / Zustand en NoteFlow |
+| `docs/persistencia.md` | AsyncStorage, rehidratación, gate de carga |
+| `docs/react-native-teoria.md` | Metro, RN vs nativo, Paper, FlashList, mapa entregable |
+| `docs/react-native-fundamentals.md` | Hilos JS/UI y rendimiento |
+| `docs/expo-router-navegacion.md` | Tabs, stacks, modal, Archivo |
+| `docs/expo-go-vs-development-build.md` | Expo Go vs EAS Development Build |
+| `docs/project-management.md` | Trello |
+| `docs/ai-setup.md` | Herramientas de IA en el proyecto |
+| `.cursorrules` | Reglas para asistentes en Cursor |
+| `.cursor/skills/noteflow/SKILL.md` | Skill de mentoría del repo |
 
-Habilita o invoca la skill **`noteflow`** en Cursor (Rules / Skills) para que estas reglas apliquen en las sesiones de este proyecto.
+Habilita la skill **`noteflow`** en Cursor para sesiones alineadas con este proyecto.
 
-## Requisitos (cuando exista el código)
+## Requisitos
 
-Será un proyecto Expo; hace falta Node.js y, para ejecutar en dispositivo o emulador, lo que indique el curso: normalmente **Expo Go** al inicio; **Development Build** si el enunciado exige módulos nativos fuera de Go (ver [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md)).
+- **Node.js** (LTS recomendado)
+- **Expo Go** en dispositivo o simulador iOS/Android para desarrollo
+- macOS / Windows / Linux según tu entorno de curso
 
 ## Licencia
 

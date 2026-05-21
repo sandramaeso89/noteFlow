@@ -17,13 +17,14 @@ export function ChecklistCard({ checklist, onPress }: ChecklistCardProps) {
   const total = checklist.items.length;
   const done = checklist.items.filter((i) => i.isCompleted).length;
   const progress = total === 0 ? 0 : done / total;
+  const allDone = total > 0 && done === total;
 
   return (
     <CardShell
       label="CHECKLIST"
       leftAccessory={
         <MaterialCommunityIcons
-          name="checkbox-blank-outline"
+          name={allDone ? 'checkbox-marked-outline' : 'checkbox-blank-outline'}
           size={20}
           color={colors.textTertiary}
         />
@@ -35,7 +36,11 @@ export function ChecklistCard({ checklist, onPress }: ChecklistCardProps) {
           <Text style={[styles.meta, { color: colors.textTertiary }]}>
             {formatUpdatedLabel(checklist.updatedAt)}
           </Text>
-          <Text style={{ color: colors.textDisabled }}>›</Text>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={22}
+            color={colors.textDisabled}
+          />
         </>
       }
     >
@@ -44,7 +49,10 @@ export function ChecklistCard({ checklist, onPress }: ChecklistCardProps) {
           <View
             style={[
               styles.fill,
-              { backgroundColor: colors.fill, width: `${Math.round(progress * 100)}%` },
+              {
+                backgroundColor: allDone ? colors.accent : colors.fill,
+                width: `${Math.round(progress * 100)}%`,
+              },
             ]}
           />
         </View>
@@ -65,7 +73,7 @@ const styles = StyleSheet.create({
   },
   track: {
     flex: 1,
-    height: 4,
+    height: 3,
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -76,7 +84,8 @@ const styles = StyleSheet.create({
   fraction: {
     fontSize: 13,
     fontVariant: ['tabular-nums'],
-    minWidth: 36,
+    fontWeight: '600',
+    minWidth: 40,
     textAlign: 'right',
   },
   meta: {

@@ -13,6 +13,8 @@ type CardShellProps = {
   footer?: ReactNode;
   children?: ReactNode;
   style?: ViewStyle;
+  /** Barra de acento vertical (solo notas). */
+  showAccentBar?: boolean;
 };
 
 export function CardShell({
@@ -23,6 +25,7 @@ export function CardShell({
   footer,
   children,
   style,
+  showAccentBar = false,
 }: CardShellProps) {
   const colors = useNoteFlowColors();
 
@@ -31,49 +34,74 @@ export function CardShell({
       onPress={onPress}
       disabled={!onPress}
       style={({ pressed }) => [
-        styles.card,
+        styles.outer,
+        showAccentBar && styles.outerWithBar,
         {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          opacity: pressed ? 0.92 : 1,
+          opacity: pressed ? 0.94 : 1,
         },
-        style,
       ]}
       accessibilityRole="button"
     >
-      <View style={styles.header}>
-        {leftAccessory}
-        <Text style={[styles.label, { color: colors.textTertiary }]}>{label}</Text>
-      </View>
-
-      <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
-        {title}
-      </Text>
-
-      {children}
-
-      {footer ? (
-        <View style={styles.footer}>{footer}</View>
-      ) : (
-        <View style={styles.footer}>
-          <View style={styles.footerSpacer} />
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={22}
-            color={colors.textDisabled}
-          />
+      {showAccentBar ? (
+        <View style={[styles.accentBar, { backgroundColor: colors.accent }]} />
+      ) : null}
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.cardBorder,
+          },
+          style,
+        ]}
+      >
+        <View style={styles.header}>
+          {leftAccessory}
+          <Text style={[styles.label, { color: colors.textTertiary }]}>{label}</Text>
         </View>
-      )}
+
+        <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
+          {title}
+        </Text>
+
+        {children}
+
+        {footer ? (
+          <View style={styles.footer}>{footer}</View>
+        ) : (
+          <View style={styles.footer}>
+            <View style={styles.footerSpacer} />
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={22}
+              color={colors.textDisabled}
+            />
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  outer: {
+    marginBottom: spacing.md,
+  },
+  outerWithBar: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  accentBar: {
+    width: 3,
+    borderTopLeftRadius: radius.card,
+    borderBottomLeftRadius: radius.card,
+    marginRight: spacing.xs,
+  },
   card: {
-    borderWidth: 1,
+    flex: 1,
+    borderWidth: 1.5,
     borderRadius: radius.card,
     padding: spacing.lg,
-    marginBottom: spacing.md,
   },
   header: {
     flexDirection: 'row',
@@ -82,9 +110,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   label: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.2,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.4,
   },
   title: {
     fontSize: 17,

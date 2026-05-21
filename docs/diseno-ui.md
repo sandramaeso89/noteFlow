@@ -24,8 +24,9 @@ Usar estos valores como tokens en `constants/theme.ts` cuando se implemente la U
 | `background` | `#F2F2F5` | Fondo de pantalla (gris muy claro, no blanco `#FFF`) |
 | `surface` | `#FFFFFF` | Fondo de tarjeta |
 | `surfaceMuted` | `#F7F7F9` | Variante suave (cabeceras, inputs) |
-| `border` | `#E4E4E8` | Borde 1px de tarjetas |
-| `borderStrong` | `#C8C8CE` | Separadores más visibles |
+| `border` | `#E4E4E8` | Bordes suaves (inputs, separadores) |
+| `cardBorder` | `#9E9EA8` | **Borde de tarjetas en listas** (1,5px, más visible) |
+| `borderStrong` | `#6E6E76` | Cabecera de lista, botón +, separadores marcados |
 | `textPrimary` | `#141414` | Títulos |
 | `textSecondary` | `#5C5C63` | Preview, cuerpo secundario |
 | `textTertiary` | `#8A8A92` | Labels `NOTA` / `CHECKLIST` / `IDEIA`, timestamps |
@@ -38,7 +39,7 @@ Usar estos valores como tokens en `constants/theme.ts` cuando se implemente la U
 ## Estructura de pantalla (lista)
 
 - **Cabecera:** título grande (“Notas”, “Checklists”, “Ideas”) + botón circular **+** con borde gris (`borderStrong`), no FAB flotante morado (salvo que se decida mantener FAB en implementación; prioridad visual = mockup).
-- **Lista:** `FlashList` sobre fondo `background`; tarjetas con `surface`, borde `border`, radio ~12–16, padding 16.
+- **Lista:** `FlashList` sobre fondo `background`; tarjetas con `surface`, borde **`cardBorder` (1,5px)**, radio ~14, padding 16. **Cabecera** (título + búsqueda + +) **sin tarjeta**: integrada en el fondo de pantalla; solo el botón + lleva borde circular.
 - **Pestañas inferiores:** iconos línea; activo en `textPrimary`, inactivo en `textTertiary`.
 
 ## Las tres tarjetas

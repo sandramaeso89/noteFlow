@@ -68,9 +68,9 @@ La pantalla bloqueante es la opción más simple y evita que el usuario cree o b
 1. Crea una nota nueva desde **+** y guarda.
 2. Cierra la app **por completo** (quitarla del reciente / forzar cierre).
 3. Vuelve a abrir NoteFlow.
-4. La nota debe seguir en la lista.
+4. La nota debe seguir en la lista (y en **Archivo** si la archivaste).
 
-Si no aparece: revisa que `persist` esté activo, que `partialize` incluya `notes` y que no haya error en consola al parsear JSON.
+Si no aparece: revisa que `persist` esté activo, que `partialize` incluya los tres arrays y que no haya error en consola al parsear JSON. Tras cambios en dependencias nativas (Reanimated), prueba `npx expo start -c`.
 
 ## Enlaces
 

@@ -159,3 +159,22 @@ Más contexto de hilos y fluidez: [`react-native-fundamentals.md`](react-native-
 | Hilos JS / UI y rendimiento | [`react-native-fundamentals.md`](react-native-fundamentals.md) |
 | Expo Go vs Development Build | [`expo-go-vs-development-build.md`](expo-go-vs-development-build.md) |
 | Producto y pantallas | [`idea.md`](idea.md) |
+
+---
+
+## Mapa del entregable del curso (NoteFlow)
+
+Tabla de cierre del enunciado: qué pide el tutor y dónde está en este repo.
+
+| Requisito del entregable | Implementación |
+|--------------------------|----------------|
+| Proyecto Expo funcional | Raíz Expo SDK 54, `expo-router/entry`, `npm start` |
+| Librería UI configurada | React Native Paper + `getNoteFlowPaperTheme` en `constants/theme.ts` |
+| Tres tipos con tarjetas distintas | `NoteCard`, `ChecklistCard`, `IdeaCard` + tipos en `types/index.ts` |
+| FlashList en todas las listas | `app/(tabs)/*/index.tsx` (incl. `archivadas`) |
+| Formularios + Zod | `app/nueva-note.tsx`, `schemas/noteSchemas.ts` |
+| Zustand | `store/notesStore.ts` |
+| AsyncStorage | `persist` + clave `noteflow-storage`, `StoreHydrationGate` |
+| Este documento (`react-native-teoria.md`) | RN vs nativo, Metro, Expo Go, comparativa UI, Paper, FlashList |
+
+Checklist detallado y pruebas manuales pendientes: [`pendiente-ejercicio.md`](pendiente-ejercicio.md).

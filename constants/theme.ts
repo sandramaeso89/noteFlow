@@ -25,9 +25,9 @@ export const radius = {
  * Alturas orientativas para `estimatedItemSize` en FlashList (ver docs/diseno-ui.md).
  */
 export const listEstimatedItemSize = {
-  note: 148,
-  checklist: 172,
-  idea: 160,
+  note: 152,
+  checklist: 176,
+  idea: 168,
 } as const;
 
 export const typography = {
@@ -57,6 +57,8 @@ export type NoteFlowColors = {
   surface: string;
   surfaceMuted: string;
   border: string;
+  /** Borde de tarjetas en listas (más visible que `border`). */
+  cardBorder: string;
   borderStrong: string;
   textPrimary: string;
   textSecondary: string;
@@ -73,7 +75,8 @@ const colorsLight: NoteFlowColors = {
   surface: '#FFFFFF',
   surfaceMuted: '#F7F7F9',
   border: '#E4E4E8',
-  borderStrong: '#C8C8CE',
+  cardBorder: '#9E9EA8',
+  borderStrong: '#6E6E76',
   textPrimary: '#141414',
   textSecondary: '#5C5C63',
   textTertiary: '#8A8A92',
@@ -89,7 +92,8 @@ const colorsDark: NoteFlowColors = {
   surface: '#1C1C1E',
   surfaceMuted: '#252528',
   border: '#2E2E32',
-  borderStrong: '#3D3D42',
+  cardBorder: '#5C5C66',
+  borderStrong: '#8A8A92',
   textPrimary: '#F2F2F5',
   textSecondary: '#A8A8B0',
   textTertiary: '#8A8A92',

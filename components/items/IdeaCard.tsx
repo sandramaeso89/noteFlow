@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { radius, spacing } from '../../constants/theme';
+import { spacing } from '../../constants/theme';
 import { useNoteFlowColors } from '../../hooks/useNoteFlowColors';
 import type { IdeaNote } from '../../types';
 import { truncate } from '../../utils/text';
@@ -13,14 +13,14 @@ type IdeaCardProps = {
   onPress?: () => void;
 };
 
-function blendIdeaBackground(surface: string, ideaColor: string): string {
-  if (!ideaColor?.startsWith('#') || ideaColor.length < 7) return surface;
+function ideaCardBackground(base: string, ideaColor: string): string {
+  if (!ideaColor?.startsWith('#') || ideaColor.length < 7) return base;
   return ideaColor;
 }
 
 export function IdeaCard({ idea, preview, onPress }: IdeaCardProps) {
   const colors = useNoteFlowColors();
-  const cardBackground = blendIdeaBackground(colors.surfaceMuted, idea.color);
+  const cardBackground = ideaCardBackground(colors.surfaceMuted, idea.color);
 
   return (
     <CardShell
@@ -43,13 +43,13 @@ export function IdeaCard({ idea, preview, onPress }: IdeaCardProps) {
                 Sin etiquetas
               </Text>
             ) : (
-              idea.tags.map((tag) => (
+              idea.tags.slice(0, 3).map((tag) => (
                 <View
                   key={tag}
                   style={[
                     styles.tag,
                     {
-                      borderColor: colors.borderStrong,
+                      borderColor: colors.cardBorder,
                       backgroundColor: colors.surface,
                     },
                   ]}
@@ -61,13 +61,17 @@ export function IdeaCard({ idea, preview, onPress }: IdeaCardProps) {
               ))
             )}
           </View>
-          <Text style={{ color: colors.textDisabled }}>›</Text>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={22}
+            color={colors.textDisabled}
+          />
         </View>
       }
     >
       {preview ? (
-        <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={2}>
-          {truncate(preview)}
+        <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={1}>
+          {truncate(preview, 64)}
         </Text>
       ) : null}
     </CardShell>
@@ -94,15 +98,15 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   tag: {
-    borderWidth: 1,
-    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    borderRadius: 4,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,
   },
   tagText: {
     fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.6,
+    fontWeight: '700',
+    letterSpacing: 0.8,
   },
   emptyTags: {
     fontSize: 12,

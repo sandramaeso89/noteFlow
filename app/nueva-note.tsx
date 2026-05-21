@@ -68,6 +68,7 @@ export default function NuevaNoteScreen() {
         content: result.data.content,
         createdAt: now,
         updatedAt: now,
+        isArchived: false,
       });
       handleClose();
       return;
@@ -92,6 +93,7 @@ export default function NuevaNoteScreen() {
         })),
         createdAt: now,
         updatedAt: now,
+        isArchived: false,
       });
       handleClose();
       return;
@@ -117,6 +119,7 @@ export default function NuevaNoteScreen() {
       color: result.data.color,
       createdAt: now,
       updatedAt: now,
+      isArchived: false,
     });
     handleClose();
   }
