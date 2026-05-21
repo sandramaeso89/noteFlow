@@ -1,3 +1,8 @@
+/**
+ * Layout raíz de la app (Expo Router).
+ * Envuelve toda la navegación con tema Paper, safe area y espera a que Zustand
+ * rehidrate datos desde AsyncStorage antes de mostrar pantallas.
+ */
 import 'react-native-reanimated';
 
 import { Stack } from 'expo-router';
@@ -9,6 +14,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StoreHydrationGate } from '../components/StoreHydrationGate';
 import { getNoteFlowPaperTheme } from '../constants/theme';
 
+// Combina useColorScheme con Appearance nativo: en algunos dispositivos el hook
+// tarda en reflejar cambios de tema del sistema; el listener mantiene coherencia.
 function useResolvedColorScheme(): ColorSchemeName {
   const fromHook = useColorScheme();
   const [fromNative, setFromNative] = useState<ColorSchemeName>(() =>
@@ -25,6 +32,7 @@ function useResolvedColorScheme(): ColorSchemeName {
   return fromHook ?? fromNative ?? 'light';
 }
 
+// Stack principal: index (redirect), tabs y modal de creación de contenido.
 function RootNavigator() {
   const theme = useTheme();
 
@@ -38,6 +46,7 @@ function RootNavigator() {
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      {/* Modal para crear nota/checklist/idea sin salir del contexto de tabs */}
       <Stack.Screen
         name="nueva-note"
         options={{

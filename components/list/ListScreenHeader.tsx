@@ -1,3 +1,6 @@
+/**
+ * Cabecera reutilizable de pantallas de listado: título, botón + y campo de búsqueda.
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-paper';

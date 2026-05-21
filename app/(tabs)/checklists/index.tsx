@@ -1,3 +1,6 @@
+/**
+ * Listado de checklists activas con barra de progreso en tarjeta y búsqueda local.
+ */
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -17,6 +20,7 @@ export default function ChecklistsListScreen() {
   const checklists = useNotesStore((s) => s.checklists);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Excluye archivadas y aplica búsqueda en título e ítems de cada checklist.
   const visibleChecklists = useMemo(() => {
     const active = checklists.filter(isActiveItem);
     return filterChecklistsBySearch(active, searchQuery);

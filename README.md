@@ -33,6 +33,8 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 **UX:** menú ⋮ en detalle (archivar / restaurar / eliminar definitivo), búsqueda, estados vacíos con CTA, haptics, animaciones Reanimated en listas.
 
+**Backend (curso, en progreso):** API en [`noteflow-api/`](noteflow-api/) (Next.js + Neon). Teoría: [`docs/backend-teoria.md`](docs/backend-teoria.md). La app móvil no accede a PostgreSQL directamente.
+
 **Pendiente solo manual (tutor):** auditoría FPS y tema claro/oscuro en simulador — [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
 
 ## Arranque local
@@ -93,6 +95,8 @@ utils/                 # haptics, confirmActions, filters, …
 | `docs/modelo-datos.md` | Tipos, `AnyNote`, type guards, `isArchived` |
 | `docs/gestion-estado.md` | useState / Context / Zustand en NoteFlow |
 | `docs/persistencia.md` | AsyncStorage, rehidratación, gate de carga |
+| `docs/backend-teoria.md` | Cliente-servidor, REST, HTTP, códigos de estado, Neon |
+| `noteflow-api/` | Proyecto Next.js API (`lib/db.ts`, `.env.example`) |
 | `docs/react-native-teoria.md` | Metro, RN vs nativo, Paper, FlashList, mapa entregable |
 | `docs/react-native-fundamentals.md` | Hilos JS/UI y rendimiento |
 | `docs/expo-router-navegacion.md` | Tabs, stacks, modal, Archivo |

@@ -1,3 +1,6 @@
+/**
+ * Formateo de fechas en español para tarjetas y pies de checklist.
+ */
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',
   month: 'short',

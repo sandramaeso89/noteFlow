@@ -1,4 +1,7 @@
-/** Convierte strings ISO (JSON) de vuelta a Date al rehidratar el store. */
+/**
+ * Utilidades de serialización para persist de Zustand (fechas ISO ↔ Date).
+ * Convierte strings ISO de vuelta a Date al rehidratar el store desde AsyncStorage.
+ */
 export function storeDateReviver(_key: string, value: unknown): unknown {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
     const parsed = new Date(value);

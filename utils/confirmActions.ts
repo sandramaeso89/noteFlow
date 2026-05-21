@@ -1,3 +1,7 @@
+/**
+ * Diálogos nativos de confirmación para archivar o borrar definitivamente.
+ * Encapsula Alert + haptic para no repetir la misma lógica en cada pantalla de detalle.
+ */
 import { Alert } from 'react-native';
 
 import { hapticImpactLight } from './haptics';

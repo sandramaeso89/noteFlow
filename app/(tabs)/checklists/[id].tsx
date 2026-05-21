@@ -1,3 +1,6 @@
+/**
+ * Detalle de checklist: marca ítems, muestra progreso y dispara haptic al completar todo.
+ */
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -20,6 +23,7 @@ export default function ChecklistDetailScreen() {
   const deleteChecklist = useNotesStore((s) => s.deleteChecklist);
 
   if (!checklist) {
+    // Ruta con id inválido: mensaje amigable en lugar de pantalla en blanco.
     return (
       <>
         <Stack.Screen options={{ title: 'Checklist' }} />
@@ -37,6 +41,7 @@ export default function ChecklistDetailScreen() {
   const progress = total === 0 ? 0 : done / total;
   const allDone = total > 0 && done === total;
 
+  // Tras toggle, leemos el store de nuevo para detectar si acaba de completarse al 100%.
   function handleToggleItem(itemId: string) {
     const completedBefore = current.items.filter((i) => i.isCompleted).length;
     void hapticImpactLight();

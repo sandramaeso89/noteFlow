@@ -1,3 +1,7 @@
+/**
+ * Listado de contenido archivado (notas, checklists e ideas mezcladas).
+ * Ordena por fecha de actualización y permite búsqueda transversal por tipo.
+ */
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -14,11 +18,13 @@ import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
 import { useNotesStore } from '../../../store/notesStore';
 import type { ChecklistNote, IdeaNote, Note } from '../../../types';
 
+// Discriminated union: permite renderizar la tarjeta correcta según el tipo archivado.
 type ArchivedRow =
   | { kind: 'note'; item: Note }
   | { kind: 'checklist'; item: ChecklistNote }
   | { kind: 'idea'; item: IdeaNote };
 
+// Búsqueda local: campos distintos según si es nota, checklist o idea.
 function matchesSearch(row: ArchivedRow, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
@@ -47,6 +53,7 @@ export default function ArchivadasListScreen() {
   const ideas = useNotesStore((s) => s.ideas);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Mezcla los tres arrays, ordena por updatedAt y aplica filtro de búsqueda.
   const archivedRows = useMemo(() => {
     const rows: ArchivedRow[] = [
       ...notes.filter((n) => n.isArchived).map((item) => ({ kind: 'note' as const, item })),

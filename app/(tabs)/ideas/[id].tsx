@@ -1,3 +1,7 @@
+/**
+ * Detalle de una idea: muestra color, etiquetas y acciones de archivo/restaurar/borrar.
+ * El id llega por la ruta dinámica `[id].tsx` de Expo Router.
+ */
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -16,6 +20,7 @@ export default function IdeaDetailScreen() {
   const unarchiveIdea = useNotesStore((s) => s.unarchiveIdea);
   const deleteIdea = useNotesStore((s) => s.deleteIdea);
 
+  // Si el id no existe (borrado o enlace roto), mostramos estado vacío sin crashear.
   if (!idea) {
     return (
       <>
@@ -36,6 +41,7 @@ export default function IdeaDetailScreen() {
         options={{
           title: '',
           headerRight: () => (
+            // Menú ⋯: archivar o restaurar según estado; borrado solo desde archivo.
             <DetailHeaderMenu
               isArchived={isArchived}
               onArchive={() =>

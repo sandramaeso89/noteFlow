@@ -1,3 +1,6 @@
+/**
+ * Detalle de nota de texto: título, cuerpo y acciones de archivo desde el menú del header.
+ */
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -17,6 +20,7 @@ export default function NotaDetailScreen() {
   const deleteNote = useNotesStore((s) => s.deleteNote);
 
   if (!note) {
+    // Ruta con id inválido: mensaje amigable en lugar de pantalla en blanco.
     return (
       <>
         <Stack.Screen options={{ title: 'Nota' }} />

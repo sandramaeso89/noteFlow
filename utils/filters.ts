@@ -1,5 +1,9 @@
+/**
+ * Filtros reutilizables para listados: excluir archivados y búsqueda por texto.
+ */
 import type { ChecklistNote, IdeaNote, Note } from '../types';
 
+// Ítems visibles en pestañas activas (Notas, Checklists, Ideas).
 export function isActiveItem<T extends { isArchived?: boolean }>(item: T): boolean {
   return !item.isArchived;
 }

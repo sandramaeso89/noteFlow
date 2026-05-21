@@ -1,3 +1,6 @@
+/**
+ * Mensaje de error de validación bajo un campo de formulario (Zod → UI).
+ */
 import { StyleSheet, Text } from 'react-native';
 
 import { spacing } from '../../constants/theme';

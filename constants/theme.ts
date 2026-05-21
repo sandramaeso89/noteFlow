@@ -1,3 +1,7 @@
+/**
+ * Tokens de diseño NoteFlow: espaciado, tipografía, colores y tema React Native Paper.
+ * Fuente única de verdad visual; ver docs/diseno-ui.md para decisiones de UI.
+ */
 import { MD3DarkTheme, MD3LightTheme, type MD3Theme } from 'react-native-paper';
 import type { ColorSchemeName } from 'react-native';
 

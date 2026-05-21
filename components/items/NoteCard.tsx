@@ -1,3 +1,6 @@
+/**
+ * Tarjeta de nota de texto en listados: punto de acento violeta y preview truncado.
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View } from 'react-native';
 

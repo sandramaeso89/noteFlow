@@ -1,3 +1,6 @@
+/**
+ * Listado de ideas activas (no archivadas) con búsqueda por título y etiquetas.
+ */
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -17,6 +20,7 @@ export default function IdeasListScreen() {
   const ideas = useNotesStore((s) => s.ideas);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Solo ideas visibles en esta pestaña; el filtro de búsqueda es adicional.
   const visibleIdeas = useMemo(() => {
     const active = ideas.filter(isActiveItem);
     return filterIdeasBySearch(active, searchQuery);

@@ -1,3 +1,6 @@
+/**
+ * Placeholder cuando FlashList no tiene datos: icono, mensaje y CTA opcional.
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';

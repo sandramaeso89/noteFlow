@@ -123,4 +123,23 @@ Repositorio en GitHub con el proyecto Expo funcional:
 
 ---
 
-*Última revisión: entregable de curso cerrado en repo; casillas abiertas = solo pruebas manuales en dispositivo.*
+## 8. Backend API (nueva fase del curso)
+
+Proyecto: [`noteflow-api/`](../noteflow-api/). Teoría: [`backend-teoria.md`](backend-teoria.md).
+
+```bash
+npx create-next-app@latest noteflow-api --typescript --app --no-tailwind --no-src-dir
+cd noteflow-api && npm install @neondatabase/serverless zod
+```
+
+- [x] Proyecto Next.js `noteflow-api` creado
+- [x] `@neondatabase/serverless` y `zod` instalados
+- [x] `.env.local` (local) + `.env.example` (plantilla); secretos fuera de git
+- [x] `lib/db.ts` con helper `query()`
+- [x] `docs/backend-teoria.md` (cliente-servidor, REST, HTTP, códigos)
+- [ ] Rutas `app/api/...` (CRUD notas / checklists / ideas)
+- [ ] Conectar app móvil a la API (sustituir o complementar AsyncStorage)
+
+---
+
+*Última revisión: móvil entregable cerrado; backend iniciado; casillas `[ ]` = API, pruebas manuales o sync móvil.*

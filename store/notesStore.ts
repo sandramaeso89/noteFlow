@@ -1,3 +1,7 @@
+/**
+ * Store global de notas (Zustand) con persistencia en AsyncStorage.
+ * Centraliza CRUD, archivo y toggle de ítems de checklist para toda la app.
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -31,6 +35,7 @@ interface NotesStore {
   toggleChecklistItem: (checklistId: string, itemId: string) => void;
 }
 
+// Actualiza updatedAt al archivar, restaurar o marcar ítems (orden en listados).
 function touch<T extends { updatedAt: Date }>(item: T): T {
   return { ...item, updatedAt: new Date() };
 }
@@ -47,6 +52,7 @@ export const useNotesStore = create<NotesStore>()(
       addChecklist: (checklist) =>
         set((state) => ({ checklists: [...state.checklists, checklist] })),
       addIdea: (idea) => set((state) => ({ ideas: [...state.ideas, idea] })),
+      // Archivar: oculta de pestañas activas pero conserva en AsyncStorage y tab Archivo.
       archiveNote: (id) =>
         set((state) => ({
           notes: state.notes.map((n) =>
@@ -65,6 +71,7 @@ export const useNotesStore = create<NotesStore>()(
             i.id === id ? touch({ ...i, isArchived: true }) : i
           ),
         })),
+      // Restaurar: vuelve a aparecer en su pestaña original.
       unarchiveNote: (id) =>
         set((state) => ({
           notes: state.notes.map((n) =>
@@ -83,6 +90,7 @@ export const useNotesStore = create<NotesStore>()(
             i.id === id ? touch({ ...i, isArchived: false }) : i
           ),
         })),
+      // Borrado definitivo: solo desde ítems ya archivados (sin papelera intermedia).
       deleteNote: (id) =>
         set((state) => ({ notes: state.notes.filter((n) => n.id !== id) })),
       deleteChecklist: (id) =>
@@ -91,6 +99,7 @@ export const useNotesStore = create<NotesStore>()(
         })),
       deleteIdea: (id) =>
         set((state) => ({ ideas: state.ideas.filter((i) => i.id !== id) })),
+      // Invierte isCompleted del ítem y actualiza updatedAt de la checklist padre.
       toggleChecklistItem: (checklistId, itemId) =>
         set((state) => ({
           checklists: state.checklists.map((c) =>
@@ -110,11 +119,13 @@ export const useNotesStore = create<NotesStore>()(
       storage: createJSONStorage(() => AsyncStorage, {
         reviver: storeDateReviver,
       }),
+      // Solo persistimos datos de negocio; flags internos como _hasHydrated quedan en memoria.
       partialize: (state) => ({
         notes: state.notes,
         checklists: state.checklists,
         ideas: state.ideas,
       }),
+      // Marca hidratación completa para que StoreHydrationGate libere la UI.
       onRehydrateStorage: () => (state, error) => {
         if (!error) state?.setHasHydrated(true);
       },

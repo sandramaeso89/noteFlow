@@ -1,3 +1,7 @@
+/**
+ * Contenedor visual compartido por NoteCard, ChecklistCard e IdeaCard.
+ * Centraliza borde, tipografía de etiqueta y área táctil de navegación.
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';

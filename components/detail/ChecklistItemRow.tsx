@@ -1,3 +1,7 @@
+/**
+ * Fila de ítem marcable dentro del detalle de una checklist.
+ * Toda la fila es táctil, no solo el checkbox de Paper.
+ */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 

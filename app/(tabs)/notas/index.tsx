@@ -1,3 +1,6 @@
+/**
+ * Listado de notas de texto activas con búsqueda por título y contenido.
+ */
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -17,6 +20,7 @@ export default function NotasListScreen() {
   const notes = useNotesStore((s) => s.notes);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Excluye archivadas y filtra por título o contenido de la nota.
   const visibleNotes = useMemo(() => {
     const active = notes.filter(isActiveItem);
     return filterNotesBySearch(active, searchQuery);

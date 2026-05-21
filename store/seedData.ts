@@ -1,3 +1,7 @@
+/**
+ * Datos de demostración y seed opcional de estrés para probar rendimiento de FlashList.
+ * El store usa getInitial*() al arrancar; si AsyncStorage ya tiene datos, los reemplaza.
+ */
 import type { ChecklistNote, IdeaNote, Note } from '../types';
 
 /** Pon `true` solo para auditar scroll con 50+ ítems en simulador. */
@@ -5,6 +9,7 @@ export const ENABLE_STRESS_SEED = false;
 
 const STRESS_COUNT = 55;
 
+// Fecha relativa al día de hoy: útil para que las tarjetas muestren "Hoy" en demos.
 function daysAgo(days: number, hour = 10, minute = 0): Date {
   const d = new Date();
   d.setDate(d.getDate() - days);
@@ -82,6 +87,7 @@ export const seedIdeas: IdeaNote[] = [
 ];
 
 function buildStressNotes(): Note[] {
+  // Genera volumen alto para medir scroll (FlashList) en simulador/dispositivo.
   return Array.from({ length: STRESS_COUNT }, (_, index) => ({
     id: `stress-note-${index}`,
     title: `Nota de prueba ${index + 1}`,

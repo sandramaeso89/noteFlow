@@ -1,3 +1,7 @@
+/**
+ * Menú contextual (⋯) del header en pantallas de detalle.
+ * Muestra Archivar o Restaurar/Eliminar según si el ítem está archivado.
+ */
 import { useState } from 'react';
 import { IconButton, Menu } from 'react-native-paper';
 
@@ -33,6 +37,7 @@ export function DetailHeaderMenu({
       }
     >
       {isArchived && onRestore ? (
+        // Desde Archivadas: volver a la pestaña activa correspondiente.
         <Menu.Item
           leadingIcon="archive-arrow-up"
           onPress={() => {
@@ -52,6 +57,7 @@ export function DetailHeaderMenu({
           title="Archivar"
         />
       ) : (
+        // En archivo: borrado irreversible (no hay papelera intermedia).
         <Menu.Item
           leadingIcon="trash-can-outline"
           onPress={() => {

@@ -1,3 +1,6 @@
+/**
+ * Feedback háptico opcional (Expo Haptics). Falla en silencio en simulador.
+ */
 import * as Haptics from 'expo-haptics';
 
 /** Feedback al archivar o eliminar definitivamente. */

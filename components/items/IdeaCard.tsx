@@ -1,3 +1,6 @@
+/**
+ * Tarjeta de idea en listados: color de fondo, etiquetas (máx. 3) y navegación al detalle.
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -13,6 +16,7 @@ type IdeaCardProps = {
   onPress?: () => void;
 };
 
+// Usa el color elegido por el usuario como fondo de tarjeta si es un hex válido.
 function ideaCardBackground(base: string, ideaColor: string): string {
   if (!ideaColor?.startsWith('#') || ideaColor.length < 7) return base;
   return ideaColor;

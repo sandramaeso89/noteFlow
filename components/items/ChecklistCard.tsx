@@ -1,3 +1,6 @@
+/**
+ * Tarjeta de checklist en listados: progreso visual (barra + fracción completada).
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -17,6 +20,7 @@ export function ChecklistCard({ checklist, onPress }: ChecklistCardProps) {
   const total = checklist.items.length;
   const done = checklist.items.filter((i) => i.isCompleted).length;
   const progress = total === 0 ? 0 : done / total;
+  // Cambia icono y color de barra cuando todos los ítems están marcados.
   const allDone = total > 0 && done === total;
 
   return (

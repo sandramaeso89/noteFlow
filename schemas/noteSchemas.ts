@@ -1,3 +1,7 @@
+/**
+ * Esquemas Zod de validación para el formulario modal `nueva-note`.
+ * Los mensajes de error se muestran en español bajo cada campo.
+ */
 import { z } from 'zod';
 
 export const noteFormSchema = z.object({

@@ -1,3 +1,7 @@
+/**
+ * Layout de pestañas inferiores (Notas, Checklists, Ideas, Archivo).
+ * Cada tab es un grupo de rutas con su propio Stack interno para listado + detalle.
+ */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tabs } from 'expo-router';
 import { useTheme } from 'react-native-paper';

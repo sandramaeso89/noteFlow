@@ -1,3 +1,8 @@
+/**
+ * Pantalla modal para crear contenido nuevo (nota, checklist o idea).
+ * Valida con Zod antes de persistir en Zustand; acepta `?type=` para abrir
+ * directamente el segmento correspondiente desde cada pestaña.
+ */
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -25,6 +30,7 @@ import { createId } from '../utils/id';
 
 type ContentType = 'note' | 'checklist' | 'idea';
 
+// Normaliza el query param `type` de Expo Router (puede llegar como string o array).
 function parseInitialType(value: string | string[] | undefined): ContentType {
   const raw = Array.isArray(value) ? value[0] : value;
   if (raw === 'checklist' || raw === 'idea') return raw;
@@ -52,6 +58,7 @@ export default function NuevaNoteScreen() {
     router.back();
   }
 
+  // Valida según el tipo activo, crea el ítem en el store y cierra el modal.
   function handleSave() {
     setErrors({});
     const now = new Date();
@@ -75,6 +82,7 @@ export default function NuevaNoteScreen() {
     }
 
     if (contentType === 'checklist') {
+      // Descarta filas vacías antes de validar con Zod (mínimo 1 ítem con texto).
       const items = itemTexts
         .map((text) => ({ text: text.trim() }))
         .filter((i) => i.text.length > 0);
@@ -108,6 +116,7 @@ export default function NuevaNoteScreen() {
       setErrors(zodFieldErrors(result.error));
       return;
     }
+    // Convierte "producto, v2" en array de etiquetas limpias para el modelo IdeaNote.
     const tags = result.data.tagsInput
       .split(',')
       .map((t) => t.trim())
@@ -148,6 +157,7 @@ export default function NuevaNoteScreen() {
           ),
         }}
       />
+      {/* Evita que el teclado tape campos en iOS/Android al escribir título o ítems */}
       <KeyboardAvoidingView
         style={[styles.flex, { backgroundColor: colors.background }]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

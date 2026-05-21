@@ -1,3 +1,7 @@
+/**
+ * Pantalla de carga mientras Zustand rehidrata notas desde AsyncStorage.
+ * Evita mostrar listas vacías un instante antes de cargar datos persistidos.
+ */
 import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -19,6 +23,7 @@ export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
   const setHasHydrated = useNotesStore((s) => s.setHasHydrated);
 
   useEffect(() => {
+    // Caso rápido: la rehidratación ya terminó antes de montar este componente.
     if (useNotesStore.persist.hasHydrated()) {
       setHasHydrated(true);
       return;
