@@ -31,6 +31,83 @@ En NoteFlow, la fase actual del móvil sigue usando **AsyncStorage** (solo dispo
 
 ---
 
+## Fundamentos de base de datos relacional
+
+Las bases de datos relacionales organizan la información en **tablas** (filas + columnas).
+Cada tabla representa una entidad del dominio (por ejemplo, `notes` o `checklist_items`) y se conectan entre sí mediante **claves**.
+
+### ACID (transacciones fiables)
+
+Las propiedades **ACID** garantizan operaciones seguras:
+
+- **Atomicidad**: o se guarda todo o no se guarda nada.
+- **Consistencia**: los datos siempre respetan reglas válidas.
+- **Aislamiento**: transacciones concurrentes no se pisan entre sí.
+- **Durabilidad**: una vez confirmado, el cambio persiste aunque haya caída del servidor.
+
+Ejemplo NoteFlow: sin atomicidad, podrías crear una nota pero fallar al guardar sus ítems de checklist, dejando datos inconsistentes.
+
+### Primary Key
+
+La **Primary Key** es un identificador único e irrepetible de cada fila.
+En apps móviles suele preferirse **UUID** frente a enteros autoincrementales, porque el cliente puede generar el id offline y sincronizar después cuando recupere conexión.
+
+### Foreign Key
+
+Una **Foreign Key** es una columna que referencia la primary key de otra tabla.
+Ejemplo: `checklist_items.note_id` apunta a `notes.id`.
+
+Con `ON DELETE CASCADE`, al borrar una nota se eliminan automáticamente sus checklist items asociados, evitando registros huérfanos.
+
+### DDL vs DML
+
+- **DDL** (Data Definition Language): define estructura (`CREATE`, `ALTER`, `DROP`).
+- **DML** (Data Manipulation Language): manipula datos (`SELECT`, `INSERT`, `UPDATE`, `DELETE`).
+
+---
+
+## Esquema SQL y diagrama entidad-relación
+
+Script del esquema: [`../sql/schema.sql`](../sql/schema.sql)
+
+### Tablas y columnas
+
+1. **`notes`**
+   - `id` (UUID, PK, `gen_random_uuid()`)
+   - `title` (VARCHAR(255), NOT NULL)
+   - `content` (TEXT)
+   - `type` (VARCHAR(50), NOT NULL, `CHECK ('note' | 'checklist' | 'idea')`)
+   - `color` (VARCHAR(7))
+   - `created_at` (TIMESTAMPTZ, `NOW()`)
+   - `updated_at` (TIMESTAMPTZ, `NOW()`)
+
+2. **`checklist_items`**
+   - `id` (UUID, PK, `gen_random_uuid()`)
+   - `note_id` (UUID, FK → `notes.id`, NOT NULL, `ON DELETE CASCADE`)
+   - `text` (VARCHAR(255), NOT NULL)
+   - `is_completed` (BOOLEAN, `FALSE`)
+
+3. **`note_tags`**
+   - `id` (UUID, PK, `gen_random_uuid()`)
+   - `note_id` (UUID, FK → `notes.id`, NOT NULL, `ON DELETE CASCADE`)
+   - `tag` (VARCHAR(100), NOT NULL)
+
+### Relaciones
+
+- **`notes` 1 ── N `checklist_items`**: una nota tipo checklist puede tener varios ítems.
+- **`notes` 1 ── N `note_tags`**: una nota/idea puede tener múltiples etiquetas.
+- Ambas relaciones usan **`ON DELETE CASCADE`** para evitar registros huérfanos.
+
+### Diagrama ER (texto)
+
+```text
+notes (id PK)
+  ├── checklist_items (id PK, note_id FK -> notes.id, ON DELETE CASCADE)
+  └── note_tags       (id PK, note_id FK -> notes.id, ON DELETE CASCADE)
+```
+
+---
+
 ## Qué es una API REST
 
 **REST** (Representational State Transfer) es un estilo para exponer recursos mediante **HTTP**:
@@ -105,9 +182,7 @@ import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL!);
 
 export async function query<T>(text: string, params?: unknown[]): Promise<T[]> {
-  const result = params?.length
-    ? await sql.query(text, params)
-    : await sql.query(text);
+  const result = await sql(text, params);
   return result as T[];
 }
 ```

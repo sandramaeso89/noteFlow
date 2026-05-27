@@ -14,8 +14,6 @@ export async function query<T = unknown>(
   text: string,
   params?: unknown[]
 ): Promise<T[]> {
-  const result = params?.length
-    ? await sql.query(text, params)
-    : await sql.query(text);
+  const result = await sql(text, params);
   return result as T[];
 }
