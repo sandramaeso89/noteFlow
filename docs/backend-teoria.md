@@ -216,6 +216,28 @@ La app móvil seguirá validando con Zod **antes** de enviar; la API **vuelve a 
 
 ---
 
+## Pruebas CRUD reales (ruta `/api/notes`)
+
+Se implementaron los handlers en:
+
+- `noteflow-api/app/api/notes/route.ts` → `GET`, `POST`
+- `noteflow-api/app/api/notes/[id]/route.ts` → `GET`, `PATCH`, `DELETE`
+
+Respuestas observadas en pruebas HTTP locales:
+
+- `GET /api/notes` → **200** (array de notas; inicialmente vacío `[]`).
+- `POST /api/notes` con body válido → **201** (nota creada con `id` UUID).
+- `POST /api/notes` con body inválido (`title` corto) → **400** con `errors` de Zod.
+- `GET /api/notes/not-a-uuid` → **400** (`El id debe ser un UUID válido`).
+- `PATCH /api/notes/not-a-uuid` → **400** (`El id debe ser un UUID válido`).
+- `PATCH /api/notes/{uuid}` con body `{}` → **400** (`Debes enviar al menos un campo para actualizar`).
+- `PATCH /api/notes/{uuid}` con body válido → **200** (nota actualizada).
+- `DELETE /api/notes/{uuid}` → **204** (sin body).
+
+Nota: cuando `DELETE` responde **204 No Content** (caso exitoso), no devuelve body. Además, por `ON DELETE CASCADE`, se eliminan automáticamente `checklist_items` y `note_tags` asociados a la nota.
+
+---
+
 ## Enlaces
 
 - [Neon — serverless driver](https://neon.tech/docs/serverless/serverless-driver)
