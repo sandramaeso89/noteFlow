@@ -46,18 +46,15 @@ export default function IdeaDetailScreen() {
               isArchived={isArchived}
               onArchive={() =>
                 confirmArchive(current.title, () => {
-                  archiveIdea(current.id);
-                  router.back();
+                  void archiveIdea(current.id).then(() => router.back());
                 })
               }
               onRestore={() => {
-                unarchiveIdea(current.id);
-                router.back();
+                void unarchiveIdea(current.id).then(() => router.back());
               }}
               onDeletePermanent={() =>
                 confirmPermanentDelete(current.title, () => {
-                  deleteIdea(current.id);
-                  router.back();
+                  void deleteIdea(current.id).then(() => router.back());
                 })
               }
             />

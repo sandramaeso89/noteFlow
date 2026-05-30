@@ -1,10 +1,10 @@
 /**
- * Pantalla de carga mientras Zustand rehidrata notas desde AsyncStorage.
- * Evita mostrar listas vacías un instante antes de cargar datos persistidos.
+ * Pantalla de carga inicial mientras el store obtiene datos de la API.
+ * Evita mostrar listas vacías antes del primer fetchNotes().
  */
 import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import { spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
@@ -14,35 +14,34 @@ type StoreHydrationGateProps = {
   children: ReactNode;
 };
 
-/**
- * Bloquea la UI hasta que Zustand termine de leer AsyncStorage (rehidratación).
- */
 export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
   const colors = useNoteFlowColors();
-  const hasHydrated = useNotesStore((s) => s._hasHydrated);
-  const setHasHydrated = useNotesStore((s) => s.setHasHydrated);
+  const isLoading = useNotesStore((s) => s.isLoading);
+  const error = useNotesStore((s) => s.error);
+  const fetchNotes = useNotesStore((s) => s.fetchNotes);
 
   useEffect(() => {
-    // Caso rápido: la rehidratación ya terminó antes de montar este componente.
-    if (useNotesStore.persist.hasHydrated()) {
-      setHasHydrated(true);
-      return;
-    }
+    void fetchNotes();
+  }, [fetchNotes]);
 
-    const unsub = useNotesStore.persist.onFinishHydration(() => {
-      setHasHydrated(true);
-    });
-
-    return unsub;
-  }, [setHasHydrated]);
-
-  if (!hasHydrated) {
+  if (isLoading) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.textPrimary} />
         <Text style={[styles.label, { color: colors.textTertiary }]}>
           Cargando tus notas…
         </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.background }]}>
+        <Text style={[styles.error, { color: colors.textSecondary }]}>{error}</Text>
+        <Button mode="contained" onPress={() => void fetchNotes()} buttonColor={colors.fill}>
+          Reintentar
+        </Button>
       </View>
     );
   }
@@ -56,8 +55,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
+    padding: spacing.lg,
   },
   label: {
     fontSize: 14,
+  },
+  error: {
+    fontSize: 15,
+    textAlign: 'center',
   },
 });

@@ -1,7 +1,6 @@
 /**
  * Layout raíz de la app (Expo Router).
- * Envuelve toda la navegación con tema Paper, safe area y espera a que Zustand
- * rehidrate datos desde AsyncStorage antes de mostrar pantallas.
+ * Envuelve toda la navegación con tema Paper, safe area y carga inicial desde la API.
  */
 import 'react-native-reanimated';
 

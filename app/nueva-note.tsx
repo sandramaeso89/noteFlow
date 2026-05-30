@@ -26,7 +26,6 @@ import {
   zodFieldErrors,
 } from '../schemas/noteSchemas';
 import { useNotesStore } from '../store/notesStore';
-import { createId } from '../utils/id';
 
 type ContentType = 'note' | 'checklist' | 'idea';
 
@@ -53,15 +52,17 @@ export default function NuevaNoteScreen() {
   const [tagsInput, setTagsInput] = useState('');
   const [selectedColor, setSelectedColor] = useState<string>(IDEA_COLOR_OPTIONS[0]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   function handleClose() {
+    if (isSaving) return;
     router.back();
   }
 
-  // Valida según el tipo activo, crea el ítem en el store y cierra el modal.
-  function handleSave() {
+  // Valida según el tipo activo, crea el ítem vía API y cierra el modal.
+  async function handleSave() {
+    if (isSaving) return;
     setErrors({});
-    const now = new Date();
 
     if (contentType === 'note') {
       const result = noteFormSchema.safeParse({ title, content });
@@ -69,20 +70,17 @@ export default function NuevaNoteScreen() {
         setErrors(zodFieldErrors(result.error));
         return;
       }
-      addNote({
-        id: createId('note'),
-        title: result.data.title,
-        content: result.data.content,
-        createdAt: now,
-        updatedAt: now,
-        isArchived: false,
-      });
-      handleClose();
+      setIsSaving(true);
+      try {
+        const ok = await addNote(result.data);
+        if (ok) handleClose();
+      } finally {
+        setIsSaving(false);
+      }
       return;
     }
 
     if (contentType === 'checklist') {
-      // Descarta filas vacías antes de validar con Zod (mínimo 1 ítem con texto).
       const items = itemTexts
         .map((text) => ({ text: text.trim() }))
         .filter((i) => i.text.length > 0);
@@ -91,19 +89,13 @@ export default function NuevaNoteScreen() {
         setErrors(zodFieldErrors(result.error));
         return;
       }
-      addChecklist({
-        id: createId('checklist'),
-        title: result.data.title,
-        items: result.data.items.map((item) => ({
-          id: createId('item'),
-          text: item.text,
-          isCompleted: false,
-        })),
-        createdAt: now,
-        updatedAt: now,
-        isArchived: false,
-      });
-      handleClose();
+      setIsSaving(true);
+      try {
+        const ok = await addChecklist(result.data);
+        if (ok) handleClose();
+      } finally {
+        setIsSaving(false);
+      }
       return;
     }
 
@@ -116,21 +108,17 @@ export default function NuevaNoteScreen() {
       setErrors(zodFieldErrors(result.error));
       return;
     }
-    // Convierte "producto, v2" en array de etiquetas limpias para el modelo IdeaNote.
     const tags = result.data.tagsInput
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
-    addIdea({
-      id: createId('idea'),
-      title: result.data.title,
-      tags,
-      color: result.data.color,
-      createdAt: now,
-      updatedAt: now,
-      isArchived: false,
-    });
-    handleClose();
+    setIsSaving(true);
+    try {
+      const ok = await addIdea({ ...result.data, tags });
+      if (ok) handleClose();
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function updateItemText(index: number, value: string) {
@@ -151,7 +139,7 @@ export default function NuevaNoteScreen() {
         options={{
           title: 'Nuevo contenido',
           headerLeft: () => (
-            <Button mode="text" onPress={handleClose} compact>
+            <Button mode="text" onPress={handleClose} compact disabled={isSaving}>
               Cancelar
             </Button>
           ),
@@ -170,6 +158,7 @@ export default function NuevaNoteScreen() {
           <SegmentedButtons
             value={contentType}
             onValueChange={(v) => setContentType(v as ContentType)}
+            disabled={isSaving}
             buttons={[
               { value: 'note', label: 'Nota' },
               { value: 'checklist', label: 'Checklist' },
@@ -288,10 +277,21 @@ export default function NuevaNoteScreen() {
           )}
 
           <View style={styles.actions}>
-            <Button mode="outlined" onPress={handleClose} textColor={colors.textPrimary}>
+            <Button
+              mode="outlined"
+              onPress={handleClose}
+              textColor={colors.textPrimary}
+              disabled={isSaving}
+            >
               Cerrar
             </Button>
-            <Button mode="contained" onPress={handleSave} buttonColor={colors.fill}>
+            <Button
+              mode="contained"
+              onPress={handleSave}
+              buttonColor={colors.fill}
+              loading={isSaving}
+              disabled={isSaving}
+            >
               Guardar
             </Button>
           </View>

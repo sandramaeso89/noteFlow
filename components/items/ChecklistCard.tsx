@@ -13,39 +13,63 @@ import { CardShell } from './CardShell';
 type ChecklistCardProps = {
   checklist: ChecklistNote;
   onPress?: () => void;
+  onLongPress?: () => void;
+  selectionMode?: boolean;
+  selected?: boolean;
 };
 
-export function ChecklistCard({ checklist, onPress }: ChecklistCardProps) {
+export function ChecklistCard({
+  checklist,
+  onPress,
+  onLongPress,
+  selectionMode = false,
+  selected = false,
+}: ChecklistCardProps) {
   const colors = useNoteFlowColors();
   const total = checklist.items.length;
   const done = checklist.items.filter((i) => i.isCompleted).length;
   const progress = total === 0 ? 0 : done / total;
-  // Cambia icono y color de barra cuando todos los ítems están marcados.
   const allDone = total > 0 && done === total;
+
+  const leftAccessory = selectionMode ? (
+    <MaterialCommunityIcons
+      name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+      size={22}
+      color={selected ? colors.textPrimary : colors.textTertiary}
+    />
+  ) : (
+    <MaterialCommunityIcons
+      name={allDone ? 'checkbox-marked-outline' : 'checkbox-blank-outline'}
+      size={20}
+      color={colors.textTertiary}
+    />
+  );
 
   return (
     <CardShell
       label="CHECKLIST"
-      leftAccessory={
-        <MaterialCommunityIcons
-          name={allDone ? 'checkbox-marked-outline' : 'checkbox-blank-outline'}
-          size={20}
-          color={colors.textTertiary}
-        />
-      }
+      selected={selected}
+      leftAccessory={leftAccessory}
       title={checklist.title}
       onPress={onPress}
+      onLongPress={onLongPress}
       footer={
-        <>
+        selectionMode ? (
           <Text style={[styles.meta, { color: colors.textTertiary }]}>
             {formatUpdatedLabel(checklist.updatedAt)}
           </Text>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={22}
-            color={colors.textDisabled}
-          />
-        </>
+        ) : (
+          <>
+            <Text style={[styles.meta, { color: colors.textTertiary }]}>
+              {formatUpdatedLabel(checklist.updatedAt)}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={22}
+              color={colors.textDisabled}
+            />
+          </>
+        )
       }
     >
       <View style={styles.progressRow}>

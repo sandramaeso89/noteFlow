@@ -42,10 +42,10 @@ export default function ChecklistDetailScreen() {
   const allDone = total > 0 && done === total;
 
   // Tras toggle, leemos el store de nuevo para detectar si acaba de completarse al 100%.
-  function handleToggleItem(itemId: string) {
+  async function handleToggleItem(itemId: string) {
     const completedBefore = current.items.filter((i) => i.isCompleted).length;
     void hapticImpactLight();
-    toggleChecklistItem(current.id, itemId);
+    await toggleChecklistItem(current.id, itemId);
     const updated = useNotesStore.getState().checklists.find((c) => c.id === current.id);
     if (
       updated &&
@@ -67,18 +67,15 @@ export default function ChecklistDetailScreen() {
               isArchived={isArchived}
               onArchive={() =>
                 confirmArchive(current.title, () => {
-                  archiveChecklist(current.id);
-                  router.back();
+                  void archiveChecklist(current.id).then(() => router.back());
                 })
               }
               onRestore={() => {
-                unarchiveChecklist(current.id);
-                router.back();
+                void unarchiveChecklist(current.id).then(() => router.back());
               }}
               onDeletePermanent={() =>
                 confirmPermanentDelete(current.title, () => {
-                  deleteChecklist(current.id);
-                  router.back();
+                  void deleteChecklist(current.id).then(() => router.back());
                 })
               }
             />

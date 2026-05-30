@@ -14,31 +14,56 @@ import { CardShell } from './CardShell';
 type NoteCardProps = {
   note: Note;
   onPress?: () => void;
+  onLongPress?: () => void;
+  selectionMode?: boolean;
+  selected?: boolean;
 };
 
-export function NoteCard({ note, onPress }: NoteCardProps) {
+export function NoteCard({
+  note,
+  onPress,
+  onLongPress,
+  selectionMode = false,
+  selected = false,
+}: NoteCardProps) {
   const colors = useNoteFlowColors();
+
+  const leftAccessory = selectionMode ? (
+    <MaterialCommunityIcons
+      name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+      size={22}
+      color={selected ? colors.textPrimary : colors.textTertiary}
+    />
+  ) : (
+    <View style={[styles.dot, { backgroundColor: colors.accent }]} />
+  );
 
   return (
     <CardShell
       label="NOTA"
-      showAccentBar
-      leftAccessory={
-        <View style={[styles.dot, { backgroundColor: colors.accent }]} />
-      }
+      showAccentBar={!selectionMode}
+      selected={selected}
+      leftAccessory={leftAccessory}
       title={note.title}
       onPress={onPress}
+      onLongPress={onLongPress}
       footer={
-        <>
+        selectionMode ? (
           <Text style={[styles.meta, { color: colors.textTertiary }]}>
             {formatNoteCardDate(note.updatedAt)}
           </Text>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={22}
-            color={colors.textDisabled}
-          />
-        </>
+        ) : (
+          <>
+            <Text style={[styles.meta, { color: colors.textTertiary }]}>
+              {formatNoteCardDate(note.updatedAt)}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={22}
+              color={colors.textDisabled}
+            />
+          </>
+        )
       }
     >
       <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={1}>

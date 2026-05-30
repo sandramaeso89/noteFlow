@@ -10,10 +10,13 @@ export default function ChecklistsLayout() {
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.onSurface,
         headerTitleStyle: { color: theme.colors.onSurface },
       }}
-    />
+    >
+      <Stack.Screen name="[id]" options={{ headerShown: true }} />
+    </Stack>
   );
 }

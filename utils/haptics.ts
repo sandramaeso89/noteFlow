@@ -1,22 +1,27 @@
 /**
- * Feedback háptico opcional (Expo Haptics). Falla en silencio en simulador.
+ * Feedback háptico opcional (Expo Haptics). Silenciado en emulador/simulador.
  */
+import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
+
+async function safeHaptic(run: () => Promise<void>): Promise<void> {
+  // isDevice es false en emuladores; evita "Call to function…" en Android.
+  if (!Constants.isDevice) return;
+  try {
+    await run();
+  } catch {
+    // Sin hardware háptico
+  }
+}
 
 /** Feedback al archivar o eliminar definitivamente. */
 export async function hapticImpactLight(): Promise<void> {
-  try {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  } catch {
-    // Simulador o dispositivo sin motor háptico
-  }
+  await safeHaptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
 }
 
 /** Feedback al completar todos los ítems de una checklist. */
 export async function hapticSuccess(): Promise<void> {
-  try {
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  } catch {
-    // Sin hardware háptico
-  }
+  await safeHaptic(() =>
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+  );
 }

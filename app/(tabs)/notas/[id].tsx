@@ -44,18 +44,15 @@ export default function NotaDetailScreen() {
               isArchived={isArchived}
               onArchive={() =>
                 confirmArchive(current.title, () => {
-                  archiveNote(current.id);
-                  router.back();
+                  void archiveNote(current.id).then(() => router.back());
                 })
               }
               onRestore={() => {
-                unarchiveNote(current.id);
-                router.back();
+                void unarchiveNote(current.id).then(() => router.back());
               }}
               onDeletePermanent={() =>
                 confirmPermanentDelete(current.title, () => {
-                  deleteNote(current.id);
-                  router.back();
+                  void deleteNote(current.id).then(() => router.back());
                 })
               }
             />

@@ -46,3 +46,27 @@ export function confirmPermanentDelete(
     ]
   );
 }
+
+/** Confirma archivar varios ítems a la vez. */
+export function confirmBulkArchive(
+  count: number,
+  singular: string,
+  plural: string,
+  onConfirm: () => void
+): void {
+  const label = count === 1 ? singular : plural;
+  Alert.alert(
+    'Archivar selección',
+    `¿Archivar ${count} ${label}? Podrás verlas en Archivadas.`,
+    [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Archivar',
+        onPress: () => {
+          void hapticImpactLight();
+          onConfirm();
+        },
+      },
+    ]
+  );
+}

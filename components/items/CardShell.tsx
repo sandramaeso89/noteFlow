@@ -14,9 +14,12 @@ type CardShellProps = {
   leftAccessory: ReactNode;
   title: string;
   onPress?: () => void;
+  onLongPress?: () => void;
   footer?: ReactNode;
   children?: ReactNode;
   style?: ViewStyle;
+  /** Resalta la tarjeta en modo selección múltiple. */
+  selected?: boolean;
   /** Barra de acento vertical (solo notas). */
   showAccentBar?: boolean;
 };
@@ -26,9 +29,11 @@ export function CardShell({
   leftAccessory,
   title,
   onPress,
+  onLongPress,
   footer,
   children,
   style,
+  selected = false,
   showAccentBar = false,
 }: CardShellProps) {
   const colors = useNoteFlowColors();
@@ -36,7 +41,8 @@ export function CardShell({
   return (
     <Pressable
       onPress={onPress}
-      disabled={!onPress}
+      onLongPress={onLongPress}
+      disabled={!onPress && !onLongPress}
       style={({ pressed }) => [
         styles.outer,
         showAccentBar && styles.outerWithBar,
@@ -45,6 +51,7 @@ export function CardShell({
         },
       ]}
       accessibilityRole="button"
+      accessibilityState={{ selected }}
     >
       {showAccentBar ? (
         <View style={[styles.accentBar, { backgroundColor: colors.accent }]} />
@@ -54,7 +61,8 @@ export function CardShell({
           styles.card,
           {
             backgroundColor: colors.surface,
-            borderColor: colors.cardBorder,
+            borderColor: selected ? colors.textPrimary : colors.cardBorder,
+            borderWidth: selected ? 2 : 1.5,
           },
           style,
         ]}
@@ -89,6 +97,8 @@ export function CardShell({
 
 const styles = StyleSheet.create({
   outer: {
+    width: '100%',
+    alignSelf: 'stretch',
     marginBottom: spacing.md,
   },
   outerWithBar: {
@@ -103,7 +113,6 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    borderWidth: 1.5,
     borderRadius: radius.card,
     padding: spacing.lg,
   },
@@ -111,6 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    width: '100%',
     marginBottom: spacing.sm,
   },
   label: {

@@ -3,15 +3,16 @@
  * Ordena por fecha de actualización y permite búsqueda transversal por tipo.
  */
 import { FlashList } from '@shopify/flash-list';
-import { router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { AnimatedCardWrapper } from '../../../components/items/AnimatedCardWrapper';
 import { ChecklistCard } from '../../../components/items/ChecklistCard';
 import { IdeaCard } from '../../../components/items/IdeaCard';
 import { NoteCard } from '../../../components/items/NoteCard';
 import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { ListScreenFrame } from '../../../components/list/ListScreenFrame';
 import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { spacing } from '../../../constants/theme';
 import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
@@ -67,11 +68,18 @@ export default function ArchivadasListScreen() {
   }, [notes, checklists, ideas, searchQuery]);
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <ListScreenFrame backgroundColor={colors.background}>
       <FlashList
+        style={styles.list}
         data={archivedRows}
         keyExtractor={(row) => `${row.kind}-${row.item.id}`}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={
+          archivedRows.length === 0
+            ? [styles.listContent, styles.listContentEmpty]
+            : styles.listContent
+        }
         ListHeaderComponent={
           <ListScreenHeader
             title="Archivadas"
@@ -110,14 +118,21 @@ export default function ArchivadasListScreen() {
           </AnimatedCardWrapper>
         )}
       />
-    </View>
+      </ListScreenFrame>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
+  list: {
+    flex: 1,
+    width: '100%',
+  },
   listContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  listContentEmpty: {
+    flexGrow: 1,
   },
 });

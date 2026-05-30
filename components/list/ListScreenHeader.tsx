@@ -14,6 +14,8 @@ type ListScreenHeaderProps = {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   searchPlaceholder?: string;
+  /** Activa modo selección múltiple (solo si hay ítems). */
+  onSelectPress?: () => void;
 };
 
 export function ListScreenHeader({
@@ -22,6 +24,7 @@ export function ListScreenHeader({
   searchQuery,
   onSearchChange,
   searchPlaceholder = 'Buscar…',
+  onSelectPress,
 }: ListScreenHeaderProps) {
   const colors = useNoteFlowColors();
 
@@ -29,21 +32,44 @@ export function ListScreenHeader({
     <View style={styles.wrap}>
       <View style={styles.row}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
-        <Pressable
-          onPress={onAddPress}
-          style={({ pressed }) => [
-            styles.addButton,
-            {
-              borderColor: colors.borderStrong,
-              backgroundColor: colors.surface,
-              opacity: pressed ? 0.85 : 1,
-            },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Nuevo contenido"
-        >
-          <MaterialCommunityIcons name="plus" size={24} color={colors.textPrimary} />
-        </Pressable>
+        <View style={styles.actions}>
+          {onSelectPress ? (
+            <Pressable
+              onPress={onSelectPress}
+              style={({ pressed }) => [
+                styles.iconButton,
+                {
+                  borderColor: colors.borderStrong,
+                  backgroundColor: colors.surface,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Seleccionar notas"
+            >
+              <MaterialCommunityIcons
+                name="checkbox-multiple-marked-outline"
+                size={22}
+                color={colors.textPrimary}
+              />
+            </Pressable>
+          ) : null}
+          <Pressable
+            onPress={onAddPress}
+            style={({ pressed }) => [
+              styles.iconButton,
+              {
+                borderColor: colors.borderStrong,
+                backgroundColor: colors.surface,
+                opacity: pressed ? 0.85 : 1,
+              },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Nuevo contenido"
+          >
+            <MaterialCommunityIcons name="plus" size={24} color={colors.textPrimary} />
+          </Pressable>
+        </View>
       </View>
       <TextInput
         mode="outlined"
@@ -64,6 +90,7 @@ export function ListScreenHeader({
 
 const styles = StyleSheet.create({
   wrap: {
+    width: '100%',
     marginBottom: spacing.lg,
     gap: spacing.md,
   },
@@ -79,7 +106,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.md,
   },
-  addButton: {
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  iconButton: {
     width: 48,
     height: 48,
     borderRadius: radius.button,

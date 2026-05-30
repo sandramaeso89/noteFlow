@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { query } from '@/lib/db';
+import { NOTE_BY_ID_SQL } from '@/lib/noteQueries';
 
 const paramsSchema = z.object({
   id: z
@@ -18,6 +19,7 @@ const patchSchema = z
     type: z.enum(['note', 'checklist', 'idea']).optional(),
     content: z.string().optional(),
     color: z.string().optional(),
+    is_archived: z.boolean().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Debes enviar al menos un campo para actualizar',
@@ -35,7 +37,7 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ errors: parsedParams.error.issues }, { status: 400 });
     }
 
-    const [note] = await query('SELECT * FROM notes WHERE id = $1 LIMIT 1', [parsedParams.data.id]);
+    const [note] = await query(NOTE_BY_ID_SQL, [parsedParams.data.id]);
     if (!note) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }
@@ -81,15 +83,24 @@ export async function PATCH(request: Request, context: RouteContext) {
       values.push(parsedBody.data.color);
       setClauses.push(`color = $${values.length + 1}`);
     }
+    if (parsedBody.data.is_archived !== undefined) {
+      values.push(parsedBody.data.is_archived);
+      setClauses.push(`is_archived = $${values.length + 1}`);
+    }
 
     const sql = `
       UPDATE notes
       SET ${setClauses.join(', ')}, updated_at = NOW()
       WHERE id = $1
-      RETURNING *
+      RETURNING id
     `;
 
-    const [note] = await query(sql, [parsedParams.data.id, ...values]);
+    const updated = await query<{ id: string }>(sql, [parsedParams.data.id, ...values]);
+    if (updated.length === 0) {
+      return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
+    }
+
+    const [note] = await query(NOTE_BY_ID_SQL, [parsedParams.data.id]);
     if (!note) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }

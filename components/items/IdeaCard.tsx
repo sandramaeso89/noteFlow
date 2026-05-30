@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { spacing } from '../../constants/theme';
 import { useNoteFlowColors } from '../../hooks/useNoteFlowColors';
 import type { IdeaNote } from '../../types';
+import { formatUpdatedLabel } from '../../utils/formatDate';
 import { truncate } from '../../utils/text';
 import { CardShell } from './CardShell';
 
@@ -14,6 +15,9 @@ type IdeaCardProps = {
   idea: IdeaNote;
   preview?: string;
   onPress?: () => void;
+  onLongPress?: () => void;
+  selectionMode?: boolean;
+  selected?: boolean;
 };
 
 // Usa el color elegido por el usuario como fondo de tarjeta si es un hex válido.
@@ -22,55 +26,78 @@ function ideaCardBackground(base: string, ideaColor: string): string {
   return ideaColor;
 }
 
-export function IdeaCard({ idea, preview, onPress }: IdeaCardProps) {
+export function IdeaCard({
+  idea,
+  preview,
+  onPress,
+  onLongPress,
+  selectionMode = false,
+  selected = false,
+}: IdeaCardProps) {
   const colors = useNoteFlowColors();
   const cardBackground = ideaCardBackground(colors.surfaceMuted, idea.color);
+
+  const leftAccessory = selectionMode ? (
+    <MaterialCommunityIcons
+      name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+      size={22}
+      color={selected ? colors.textPrimary : colors.textTertiary}
+    />
+  ) : (
+    <MaterialCommunityIcons
+      name="lightbulb-outline"
+      size={20}
+      color={colors.textTertiary}
+    />
+  );
 
   return (
     <CardShell
       label="IDEA"
-      leftAccessory={
-        <MaterialCommunityIcons
-          name="lightbulb-outline"
-          size={20}
-          color={colors.textTertiary}
-        />
-      }
+      selected={selected}
+      leftAccessory={leftAccessory}
       title={idea.title}
       onPress={onPress}
+      onLongPress={onLongPress}
       style={{ backgroundColor: cardBackground }}
       footer={
-        <View style={styles.footerRow}>
-          <View style={styles.tags}>
-            {idea.tags.length === 0 ? (
-              <Text style={[styles.emptyTags, { color: colors.textTertiary }]}>
-                Sin etiquetas
-              </Text>
-            ) : (
-              idea.tags.slice(0, 3).map((tag) => (
-                <View
-                  key={tag}
-                  style={[
-                    styles.tag,
-                    {
-                      borderColor: colors.cardBorder,
-                      backgroundColor: colors.surface,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.tagText, { color: colors.textSecondary }]}>
-                    {tag.toUpperCase()}
-                  </Text>
-                </View>
-              ))
-            )}
+        selectionMode ? (
+          <Text style={[styles.emptyTags, { color: colors.textTertiary }]}>
+            {formatUpdatedLabel(idea.updatedAt)}
+          </Text>
+        ) : (
+          <View style={styles.footerRow}>
+            <View style={styles.tags}>
+              {idea.tags.length === 0 ? (
+                <Text style={[styles.emptyTags, { color: colors.textTertiary }]}>
+                  Sin etiquetas
+                </Text>
+              ) : (
+                idea.tags.slice(0, 3).map((tag) => (
+                  <View
+                    key={tag}
+                    style={[
+                      styles.tag,
+                      {
+                        borderColor: colors.cardBorder,
+                        backgroundColor: colors.surface,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.tagText, { color: colors.textSecondary }]}>
+                      {tag.toUpperCase()}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={22}
+              color={colors.textDisabled}
+            />
           </View>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={22}
-            color={colors.textDisabled}
-          />
-        </View>
+        )
       }
     >
       {preview ? (
