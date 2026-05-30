@@ -108,6 +108,50 @@ notes (id PK)
 
 ---
 
+## JOINs: INNER JOIN vs LEFT JOIN
+
+Cuando una entidad tiene **relaciones 1 ── N** (una nota, muchos ítems), a menudo necesitas leer la tabla padre y sus hijos en **una sola consulta**. Ahí entran los **JOINs**: unen filas de dos tablas según una condición (normalmente `tabla_hija.foreign_key = tabla_padre.id`).
+
+Consulta de referencia con agregación JSON: [`../sql/queries.sql`](../sql/queries.sql).
+
+### INNER JOIN
+
+Devuelve **solo** las filas donde **hay coincidencia en ambas tablas**.
+
+```sql
+SELECT n.title, ci.text
+FROM notes n
+INNER JOIN checklist_items ci ON n.id = ci.note_id;
+```
+
+- Si una nota **no tiene** ítems de checklist, **no aparece** en el resultado.
+- **Cuándo usarlo en NoteFlow:** listar únicamente checklists que **ya tienen al menos un ítem** (p. ej. informe de “tareas en curso” donde un checklist vacío no aporta).
+
+### LEFT JOIN
+
+Devuelve **todas** las filas de la tabla **izquierda** (`notes`) y las coincidentes de la derecha; si no hay coincidencia, las columnas de la derecha son **NULL**.
+
+```sql
+SELECT n.*, ci.text
+FROM notes n
+LEFT JOIN checklist_items ci ON n.id = ci.note_id;
+```
+
+- Una nota **sin ítems** sigue apareciendo; `ci.text` será `NULL`.
+- **Cuándo usarlo en NoteFlow:** listado general de notas (incluidas tipo `note` o `idea` sin checklist), detalle de una nota con sus ítems opcionales, o la consulta agregada de `queries.sql` que junta ítems y tags en arrays JSON.
+
+### Comparación rápida
+
+| Aspecto | INNER JOIN | LEFT JOIN |
+|---------|------------|-----------|
+| Tabla izquierda sin match en la derecha | Se **excluye** | Se **incluye** (NULL a la derecha) |
+| Caso NoteFlow | Solo notas **con** ítems | **Todas** las notas, con o sin ítems/tags |
+| Riesgo | “Perder” notas vacías en listados | Más filas antes de `GROUP BY`; usar `FILTER` en agregados |
+
+En `queries.sql`, dos `LEFT JOIN` + `json_agg(...) FILTER (WHERE ... IS NOT NULL)` producen **una fila por nota** con arrays `items` y `tags` vacíos (`[]`) cuando no hay hijos, en lugar de omitir la nota o devolver `[null]`.
+
+---
+
 ## Qué es una API REST
 
 **REST** (Representational State Transfer) es un estilo para exponer recursos mediante **HTTP**:
@@ -216,9 +260,11 @@ La app móvil seguirá validando con Zod **antes** de enviar; la API **vuelve a 
 
 ---
 
-## Pruebas CRUD reales (ruta `/api/notes`)
+## Pruebas CRUD reales (rutas API)
 
-Se implementaron los handlers en:
+### Notas
+
+Handlers en:
 
 - `noteflow-api/app/api/notes/route.ts` → `GET`, `POST`
 - `noteflow-api/app/api/notes/[id]/route.ts` → `GET`, `PATCH`, `DELETE`
@@ -235,6 +281,39 @@ Respuestas observadas en pruebas HTTP locales:
 - `DELETE /api/notes/{uuid}` → **204** (sin body).
 
 Nota: cuando `DELETE` responde **204 No Content** (caso exitoso), no devuelve body. Además, por `ON DELETE CASCADE`, se eliminan automáticamente `checklist_items` y `note_tags` asociados a la nota.
+
+### Ítems de checklist
+
+Handlers en:
+
+- `noteflow-api/app/api/notes/[id]/checklist-items/route.ts` → `GET`, `POST`
+- `noteflow-api/app/api/checklist-items/[itemId]/route.ts` → `PATCH`, `DELETE`
+
+| Método | Ruta | Body (JSON) | Respuesta esperada |
+|--------|------|-------------|-------------------|
+| **GET** | `/api/notes/{noteId}/checklist-items` | — | **200** array de ítems; **404** si la nota no existe |
+| **POST** | `/api/notes/{noteId}/checklist-items` | `{ "text": "...", "is_completed": false }` | **201** ítem creado; **400** validación Zod |
+| **PATCH** | `/api/checklist-items/{itemId}` | `{ "is_completed": true }` | **200** ítem actualizado; **404** si no existe |
+| **DELETE** | `/api/checklist-items/{itemId}` | — | **204** sin body; **404** si no existe |
+
+Ejemplo de flujo (con `noteId` e `itemId` UUID reales):
+
+```bash
+# Crear nota tipo checklist
+curl -X POST http://localhost:3000/api/notes \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Seguimiento cliente","type":"checklist"}'
+
+# Añadir ítem
+curl -X POST http://localhost:3000/api/notes/{noteId}/checklist-items \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Enviar acta"}'
+
+# Marcar hecho
+curl -X PATCH http://localhost:3000/api/checklist-items/{itemId} \
+  -H "Content-Type: application/json" \
+  -d '{"is_completed":true}'
+```
 
 ---
 
