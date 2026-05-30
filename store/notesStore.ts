@@ -40,6 +40,8 @@ interface NotesStore {
   deleteChecklist: (id: string) => Promise<void>;
   deleteIdea: (id: string) => Promise<void>;
   toggleChecklistItem: (checklistId: string, itemId: string) => Promise<void>;
+  /** Vacía el store al cerrar sesión (evita ver datos del usuario anterior). */
+  resetForLogout: () => void;
 }
 
 function replaceInList<T extends { id: string }>(list: T[], updated: T): T[] {
@@ -383,5 +385,15 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     } catch {
       set({ checklists: previousChecklists, error: 'Error al actualizar ítem' });
     }
+  },
+
+  resetForLogout: () => {
+    set({
+      notes: [],
+      checklists: [],
+      ideas: [],
+      isLoading: false,
+      error: null,
+    });
   },
 }));

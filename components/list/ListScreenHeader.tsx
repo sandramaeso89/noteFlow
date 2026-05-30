@@ -7,6 +7,7 @@ import { TextInput } from 'react-native-paper';
 
 import { radius, spacing, typography } from '../../constants/theme';
 import { useNoteFlowColors } from '../../hooks/useNoteFlowColors';
+import { UserMenuButton } from '../UserMenuButton';
 
 type ListScreenHeaderProps = {
   title: string;
@@ -33,6 +34,7 @@ export function ListScreenHeader({
       <View style={styles.row}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
         <View style={styles.actions}>
+          <UserMenuButton />
           {onSelectPress ? (
             <Pressable
               onPress={onSelectPress}

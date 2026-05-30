@@ -4,7 +4,14 @@
 import { create } from 'zustand';
 
 import { AuthApiError, loginUser, registerUser, type AuthUser } from '../lib/authApi';
-import { clearAuthToken, getAuthToken, saveAuthToken } from '../lib/authStorage';
+import {
+  clearAuthToken,
+  clearAuthUser,
+  getAuthToken,
+  getAuthUser,
+  saveAuthToken,
+  saveAuthUser,
+} from '../lib/authStorage';
 import { setApiAuthToken } from '../lib/api';
 
 interface AuthStore {
@@ -29,8 +36,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const token = await getAuthToken();
       if (token) {
+        const user = await getAuthUser();
         setApiAuthToken(token);
-        set({ isAuthenticated: true, isReady: true, error: null });
+        set({
+          user,
+          isAuthenticated: true,
+          isReady: true,
+          error: null,
+        });
         return;
       }
       setApiAuthToken(null);
@@ -46,6 +59,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const { token, user } = await loginUser(email, password);
       await saveAuthToken(token);
+      await saveAuthUser(user);
       setApiAuthToken(token);
       set({ user, isAuthenticated: true, error: null });
       return true;
@@ -62,6 +76,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const { token, user } = await registerUser(email, password);
       await saveAuthToken(token);
+      await saveAuthUser(user);
       setApiAuthToken(token);
       set({ user, isAuthenticated: true, error: null });
       return true;
@@ -75,6 +90,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logout: async () => {
     await clearAuthToken();
+    await clearAuthUser();
     setApiAuthToken(null);
     set({ user: null, isAuthenticated: false, error: null });
   },

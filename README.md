@@ -4,7 +4,80 @@ App de **productividad** pensada para quienes viven de **reuniones**: capturar e
 
 La definición de producto, usuario y alcance está en **[`docs/idea.md`](docs/idea.md)**.
 
-## Tablero Trello (gestión del trabajo)
+---
+
+## Arranque rápido (app móvil)
+
+Sigue estos pasos cada vez que quieras abrir la app en tu Mac / emulador.
+
+### Requisitos previos (solo la primera vez)
+
+- **Node.js** (LTS)
+- **Expo Go** en dispositivo o simulador iOS/Android
+- Cuenta creada en la app (pantalla de login)
+
+### Pasos
+
+**1. Instalar dependencias** (solo la primera vez o tras `git pull`):
+
+```bash
+cd noteFlow
+npm install
+```
+
+**2. Configurar la URL de la API** — archivo **`.env`** en la raíz del repo (no en `noteflow-api/`):
+
+```bash
+cp .env.example .env
+```
+
+Edita `.env`:
+
+| Modo | `EXPO_PUBLIC_API_URL` |
+|------|------------------------|
+| **Producción (Vercel)** — recomendado | `https://note-flow-topaz.vercel.app/api` |
+| iOS Simulator (API local) | `http://localhost:3000/api` |
+| Android Emulator (API local) | `http://10.0.2.2:3000/api` |
+| Dispositivo físico (API local, misma WiFi) | `http://<IP-de-tu-Mac>:3000/api` |
+
+**3. Arrancar Expo:**
+
+```bash
+npx expo start -c
+```
+
+Escanea el QR con **Expo Go** o pulsa `i` (iOS) / `a` (Android) en la terminal.
+
+**4. Iniciar sesión** en la pantalla de login (regístrate si es la primera vez).
+
+**5. Usar la app:** pestañas **Notas · Checklists · Ideas · Archivo**. Icono de **cuenta** (cabecera) → email y **Cerrar sesión**.
+
+### API local (opcional)
+
+Solo si quieres desarrollar contra `localhost:3000` en lugar de Vercel:
+
+```bash
+# Terminal 1 — backend
+cd noteflow-api
+cp .env.example .env.local   # DATABASE_URL + JWT_SECRET (ver docs/setup-auth-local.md)
+npm install
+npm run dev
+
+# Terminal 2 — app (con .env apuntando a localhost / 10.0.2.2)
+npx expo start -c
+```
+
+Guía completa backend y Neon: [`docs/setup-auth-local.md`](docs/setup-auth-local.md).
+
+### Enlaces del proyecto desplegado
+
+| Recurso | URL |
+|---------|-----|
+| **Repositorio GitHub** | https://github.com/sandramaeso89/noteFlow |
+| **API REST (Vercel)** | https://note-flow-topaz.vercel.app/api |
+| **Documentación deploy** | [`docs/vercel-deploy.md`](docs/vercel-deploy.md) |
+
+---
 
 | Recurso | Enlace |
 |---------|--------|
@@ -25,8 +98,9 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 | Formularios + Zod | Hecho | `app/nueva-note.tsx`, `schemas/noteSchemas.ts` |
 | Zustand + API REST | Hecho | `store/notesStore.ts`, `lib/api.ts` |
 | API Next.js + Neon PostgreSQL | Hecho | [`noteflow-api/`](noteflow-api/) |
-| Auth JWT + SecureStore | Hecho | `app/login.tsx`, `store/authStore.ts`, `lib/authStorage.ts` |
+| Auth JWT + SecureStore + menú usuario | Hecho | `app/login.tsx`, `components/UserMenuButton.tsx` |
 | Selección múltiva y archivar en bloque | Hecho | `app/(tabs)/*/index.tsx` |
+| API desplegada en Vercel + Neon | Hecho | https://note-flow-topaz.vercel.app/api |
 | Documentación backend, auth y Vercel | Hecho | `docs/setup-auth-local.md`, `docs/auth-api.md`, `docs/vercel-deploy.md` |
 
 **Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
@@ -35,45 +109,7 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 ---
 
-## App móvil — arranque local
-
-### Requisitos
-
-- **Node.js** (LTS recomendado)
-- **Expo Go** en dispositivo o simulador iOS/Android
-
-### Setup paso a paso
-
-1. Instalar dependencias en la raíz del repo:
-
-   ```bash
-   npm install
-   ```
-
-2. Configurar la URL de la API y **registrarte en la app** (pantalla de login):
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edita `.env` según dónde ejecutes la app (local o Vercel):
-
-   | Entorno | Valor típico de `EXPO_PUBLIC_API_URL` |
-   |---------|---------------------------------------|
-   | iOS Simulator | `http://localhost:3000/api` |
-   | Android Emulator | `http://10.0.2.2:3000/api` |
-   | Dispositivo físico (misma WiFi) | `http://<IP-de-tu-Mac>:3000/api` |
-   | Producción (Vercel) | `https://tu-proyecto.vercel.app/api` |
-
-3. **Arrancar la API** (terminal 1) — [`docs/setup-auth-local.md`](docs/setup-auth-local.md): Neon SQL + `DATABASE_URL` y `JWT_SECRET` en `noteflow-api/.env.local`.
-
-4. **Arrancar Expo** (terminal 2):
-
-   ```bash
-   npx expo start -c
-   ```
-
-   Escanea el QR con **Expo Go** o abre simulador (`i` / `a` en la CLI).
+## App móvil — detalle técnico
 
 ### Stack móvil
 
@@ -101,6 +137,7 @@ app/
 components/
   items/               # Tarjetas y AnimatedCardWrapper
   list/                # Cabecera, vacíos, BulkArchiveBar
+  UserMenuButton.tsx   # Cuenta + cerrar sesión
 lib/api.ts             # Cliente HTTP + Bearer JWT
 lib/authApi.ts         # Register / login
 lib/authStorage.ts     # Token en SecureStore

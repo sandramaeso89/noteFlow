@@ -8,9 +8,8 @@ import { Text } from 'react-native-paper';
 
 import { spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
-import { ApiAuthError } from '../lib/api';
-import { clearAuthToken } from '../lib/authStorage';
 import { useAuthStore } from '../store/authStore';
+import { useNotesStore } from '../store/notesStore';
 
 type AuthGateProps = {
   children: ReactNode;
@@ -56,8 +55,8 @@ export function AuthGate({ children }: AuthGateProps) {
 
 /** Llamar tras 401 en peticiones API para cerrar sesión de forma segura. */
 export async function handleApiUnauthorized(): Promise<void> {
-  await clearAuthToken();
   await useAuthStore.getState().logout();
+  useNotesStore.getState().resetForLogout();
   router.replace('/login');
 }
 
