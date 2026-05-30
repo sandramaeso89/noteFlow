@@ -13,6 +13,8 @@ const noteSchema = z.object({
   tags: z.array(z.string().trim().min(1)).optional(),
 });
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const auth = await requireAuth(request);
   if (isAuthError(auth)) return auth;

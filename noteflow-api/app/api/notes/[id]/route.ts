@@ -30,6 +30,8 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, context: RouteContext) {
   const auth = await requireAuth(request);
   if (isAuthError(auth)) return auth;

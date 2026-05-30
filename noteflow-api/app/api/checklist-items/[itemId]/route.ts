@@ -22,6 +22,8 @@ type RouteContext = {
   params: Promise<{ itemId: string }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 /** Marca o desmarca un ítem de checklist (campo is_completed). */
 export async function PATCH(request: Request, context: RouteContext) {
   const auth = await requireAuth(request);

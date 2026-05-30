@@ -9,6 +9,8 @@ const registerSchema = z.object({
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').max(128),
 });
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

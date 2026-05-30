@@ -23,6 +23,8 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 /** Lista los ítems de checklist asociados a una nota del usuario. */
 export async function GET(request: Request, context: RouteContext) {
   const auth = await requireAuth(request);
