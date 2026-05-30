@@ -2,7 +2,7 @@
  * Listado de checklists activas con barra de progreso en tarjeta y búsqueda local.
  */
 import { FlashList } from '@shopify/flash-list';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -24,10 +24,18 @@ export default function ChecklistsListScreen() {
   const colors = useNoteFlowColors();
   const checklists = useNotesStore((s) => s.checklists);
   const archiveChecklists = useNotesStore((s) => s.archiveChecklists);
+  const refreshNotes = useNotesStore((s) => s.refreshNotes);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isArchiving, setIsArchiving] = useState(false);
+
+  // Recarga al entrar en la pestaña por si los datos cambiaron en la API.
+  useFocusEffect(
+    useCallback(() => {
+      void refreshNotes();
+    }, [refreshNotes])
+  );
 
   // Excluye archivadas y aplica búsqueda en título e ítems de cada checklist.
   const visibleChecklists = useMemo(() => {

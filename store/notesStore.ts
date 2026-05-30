@@ -7,8 +7,8 @@ import {
   createChecklistWithItems,
   createNote,
   deleteNote as deleteNoteApi,
-  getNotes,
-  splitAnyNotes,
+  fetchNoteBuckets,
+  ApiAuthError,
   updateChecklistItem,
   updateNote as updateNoteApi,
 } from '../lib/api';
@@ -22,6 +22,8 @@ interface NotesStore {
   isLoading: boolean;
   error: string | null;
   fetchNotes: () => Promise<void>;
+  /** Recarga desde API sin pantalla de carga global (p. ej. al cambiar de pestaña). */
+  refreshNotes: () => Promise<void>;
   addNote: (input: NoteFormValues) => Promise<boolean>;
   addChecklist: (input: ChecklistFormValues) => Promise<boolean>;
   addIdea: (input: IdeaFormValues & { tags: string[] }) => Promise<boolean>;
@@ -58,11 +60,35 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   fetchNotes: async () => {
     set({ isLoading: true, error: null });
     try {
-      const all = await getNotes();
-      const { notes, checklists, ideas } = splitAnyNotes(all);
+      const { notes, checklists, ideas } = await fetchNoteBuckets();
       set({ notes, checklists, ideas, isLoading: false, error: null });
-    } catch {
-      set({ isLoading: false, error: 'Error al cargar notas' });
+    } catch (error) {
+      if (error instanceof ApiAuthError) {
+        set({ isLoading: false, error: 'Sesión expirada' });
+        return;
+      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al cargar notas';
+      set({ isLoading: false, error: message });
+    }
+  },
+
+  refreshNotes: async () => {
+    try {
+      const { notes, checklists, ideas } = await fetchNoteBuckets();
+      set({ notes, checklists, ideas, error: null });
+    } catch (error) {
+      if (error instanceof ApiAuthError) {
+        set({ error: 'Sesión expirada' });
+        return;
+      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al cargar notas';
+      set({ error: message });
     }
   },
 

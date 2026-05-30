@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { isAuthError, requireAuth } from '@/lib/auth';
 import { query } from '@/lib/db';
+import { NOTE_OWNERSHIP_SQL } from '@/lib/noteQueries';
 
 const paramsSchema = z.object({
   id: z
@@ -21,8 +23,11 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-/** Lista los ítems de checklist asociados a una nota. */
-export async function GET(_request: Request, context: RouteContext) {
+/** Lista los ítems de checklist asociados a una nota del usuario. */
+export async function GET(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
@@ -32,7 +37,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const noteId = parsedParams.data.id;
 
-    const [note] = await query('SELECT id FROM notes WHERE id = $1 LIMIT 1', [noteId]);
+    const [note] = await query(NOTE_OWNERSHIP_SQL, [noteId, auth.userId]);
     if (!note) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }
@@ -51,6 +56,9 @@ export async function GET(_request: Request, context: RouteContext) {
 
 /** Crea un ítem de checklist vinculado a la nota indicada en la ruta. */
 export async function POST(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
@@ -60,7 +68,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const noteId = parsedParams.data.id;
 
-    const [note] = await query('SELECT id FROM notes WHERE id = $1 LIMIT 1', [noteId]);
+    const [note] = await query(NOTE_OWNERSHIP_SQL, [noteId, auth.userId]);
     if (!note) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }

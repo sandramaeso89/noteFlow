@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { isAuthError, requireAuth } from '@/lib/auth';
 import { query } from '@/lib/db';
+import { CHECKLIST_ITEM_OWNERSHIP_SQL } from '@/lib/noteQueries';
 
 const paramsSchema = z.object({
   itemId: z
@@ -22,11 +24,22 @@ type RouteContext = {
 
 /** Marca o desmarca un ítem de checklist (campo is_completed). */
 export async function PATCH(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
     if (!parsedParams.success) {
       return NextResponse.json({ errors: parsedParams.error.issues }, { status: 400 });
+    }
+
+    const [owned] = await query(CHECKLIST_ITEM_OWNERSHIP_SQL, [
+      parsedParams.data.itemId,
+      auth.userId,
+    ]);
+    if (!owned) {
+      return NextResponse.json({ error: 'Ítem no encontrado' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -52,12 +65,23 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 /** Elimina un ítem de checklist de forma definitiva. */
-export async function DELETE(_request: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
     if (!parsedParams.success) {
       return NextResponse.json({ errors: parsedParams.error.issues }, { status: 400 });
+    }
+
+    const [owned] = await query(CHECKLIST_ITEM_OWNERSHIP_SQL, [
+      parsedParams.data.itemId,
+      auth.userId,
+    ]);
+    if (!owned) {
+      return NextResponse.json({ error: 'Ítem no encontrado' }, { status: 404 });
     }
 
     const deleted = await query(

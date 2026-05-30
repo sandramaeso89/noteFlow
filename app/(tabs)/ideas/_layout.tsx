@@ -9,6 +9,7 @@ export default function IdeasLayout() {
 
   return (
     <Stack
+      initialRouteName="index"
       screenOptions={{
         headerShown: false,
         headerStyle: { backgroundColor: theme.colors.surface },
@@ -16,6 +17,7 @@ export default function IdeasLayout() {
         headerTitleStyle: { color: theme.colors.onSurface },
       }}
     >
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="[id]" options={{ headerShown: true }} />
     </Stack>
   );

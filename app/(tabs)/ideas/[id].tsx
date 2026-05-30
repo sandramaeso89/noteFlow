@@ -3,10 +3,11 @@
  * El id llega por la ruta dinámica `[id].tsx` de Expo Router.
  */
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DetailHeaderMenu } from '../../../components/detail/DetailHeaderMenu';
 import { radius, spacing, typography } from '../../../constants/theme';
+import { useDetailRedirectIfMissing } from '../../../hooks/useDetailRedirectIfMissing';
 import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
 import { useNotesStore } from '../../../store/notesStore';
 import { confirmArchive, confirmPermanentDelete } from '../../../utils/confirmActions';
@@ -20,13 +21,14 @@ export default function IdeaDetailScreen() {
   const unarchiveIdea = useNotesStore((s) => s.unarchiveIdea);
   const deleteIdea = useNotesStore((s) => s.deleteIdea);
 
-  // Si el id no existe (borrado o enlace roto), mostramos estado vacío sin crashear.
-  if (!idea) {
+  const ready = useDetailRedirectIfMissing(!!idea, '/ideas');
+
+  if (!ready || !idea) {
     return (
       <>
         <Stack.Screen options={{ title: 'Idea' }} />
-        <View style={[styles.screen, { backgroundColor: colors.background }]}>
-          <Text style={{ color: colors.textSecondary }}>No se encontró esta idea.</Text>
+        <View style={[styles.screen, styles.centered, { backgroundColor: colors.background }]}>
+          <ActivityIndicator color={colors.textPrimary} />
         </View>
       </>
     );
@@ -98,6 +100,7 @@ export default function IdeaDetailScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: spacing.lg },
+  centered: { alignItems: 'center', justifyContent: 'center' },
   content: { padding: spacing.lg, paddingBottom: spacing.xxxl },
   colorBand: {
     height: 6,

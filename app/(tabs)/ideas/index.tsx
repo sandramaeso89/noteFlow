@@ -2,7 +2,7 @@
  * Listado de ideas activas (no archivadas) con búsqueda por título y etiquetas.
  */
 import { FlashList } from '@shopify/flash-list';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -24,10 +24,17 @@ export default function IdeasListScreen() {
   const colors = useNoteFlowColors();
   const ideas = useNotesStore((s) => s.ideas);
   const archiveIdeas = useNotesStore((s) => s.archiveIdeas);
+  const refreshNotes = useNotesStore((s) => s.refreshNotes);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isArchiving, setIsArchiving] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshNotes();
+    }, [refreshNotes])
+  );
 
   // Solo ideas visibles en esta pestaña; el filtro de búsqueda es adicional.
   const visibleIdeas = useMemo(() => {

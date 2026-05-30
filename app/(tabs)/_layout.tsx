@@ -3,7 +3,7 @@
  * Cada tab es un grupo de rutas con su propio Stack interno para listado + detalle.
  */
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,6 +32,11 @@ export default function TabsLayout() {
             <MaterialCommunityIcons name="note-text-outline" size={size} color={color} />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            router.replace('/notas');
+          },
+        }}
       />
       <Tabs.Screen
         name="checklists"
@@ -41,6 +46,11 @@ export default function TabsLayout() {
             <MaterialCommunityIcons name="format-list-checks" size={size} color={color} />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            router.replace('/checklists');
+          },
+        }}
       />
       <Tabs.Screen
         name="ideas"
@@ -49,6 +59,11 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="lightbulb-outline" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            router.replace('/ideas');
+          },
         }}
       />
       <Tabs.Screen

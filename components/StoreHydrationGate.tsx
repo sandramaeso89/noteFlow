@@ -8,6 +8,8 @@ import { Button, Text } from 'react-native-paper';
 
 import { spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
+import { handleApiUnauthorized } from '../components/AuthGate';
+import { useAuthStore } from '../store/authStore';
 import { useNotesStore } from '../store/notesStore';
 
 type StoreHydrationGateProps = {
@@ -16,13 +18,26 @@ type StoreHydrationGateProps = {
 
 export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
   const colors = useNoteFlowColors();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useNotesStore((s) => s.isLoading);
   const error = useNotesStore((s) => s.error);
   const fetchNotes = useNotesStore((s) => s.fetchNotes);
 
   useEffect(() => {
-    void fetchNotes();
-  }, [fetchNotes]);
+    if (isAuthenticated) {
+      void fetchNotes();
+    }
+  }, [fetchNotes, isAuthenticated]);
+
+  useEffect(() => {
+    if (error === 'Sesión expirada') {
+      void handleApiUnauthorized();
+    }
+  }, [error]);
+
+  if (!isAuthenticated) {
+    return children;
+  }
 
   if (isLoading) {
     return (

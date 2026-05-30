@@ -1,122 +1,151 @@
-# Backend NoteFlow: teoría y patrón cliente-servidor
+# Backend NoteFlow: arquitectura, REST, SQL y JOINs
 
-Documento del curso para la API **`noteflow-api`** (Next.js + Neon PostgreSQL). La app móvil Expo **no** se conecta directamente a la base de datos.
+Documento del curso para la API **`noteflow-api`** (Next.js + Neon PostgreSQL). La app móvil Expo **no** se conecta directamente a la base de datos: consume la API vía HTTP (`lib/api.ts`).
 
 ---
 
-## Por qué necesitamos un backend
+## Arquitectura cliente-servidor
 
-Una app móvil **nunca** debe conectarse directamente a una base de datos.
+### Por qué la app no habla con PostgreSQL
 
 Si el **connection string** de PostgreSQL estuviera embebido en el binario de la app, cualquiera que la descompilase tendría **acceso completo** a la base de datos: leer, modificar y borrar datos de todos los usuarios.
 
-El patrón correcto es **cliente-servidor**:
+El patrón correcto es **cliente-servidor** en tres capas:
 
 ```text
-[ App móvil NoteFlow ]  --HTTP-->  [ API noteflow-api ]  --SQL-->  [ PostgreSQL (Neon) ]
-     (cliente)                         (servidor / guardián)              (datos)
+┌─────────────────────┐     HTTP/JSON      ┌──────────────────────┐     SQL      ┌─────────────────────┐
+│  App móvil NoteFlow │  ───────────────►  │  API noteflow-api    │  ─────────►  │  PostgreSQL (Neon)  │
+│  (Expo + Zustand)   │  ◄───────────────  │  (Next.js Route      │  ◄─────────  │                     │
+│  lib/api.ts         │                    │   Handlers)          │              │  notes, items, tags │
+└─────────────────────┘                    └──────────────────────┘              └─────────────────────┘
+     Cliente                                       Guardián / servidor                    Persistencia
 ```
 
-Cada capa tiene **una responsabilidad**:
+| Capa | Ubicación en el repo | Responsabilidad |
+|------|----------------------|-----------------|
+| **Cliente (móvil)** | `app/`, `store/notesStore.ts`, `lib/api.ts` | UI, estado local, llamadas HTTP tipadas |
+| **API (servidor)** | `noteflow-api/app/api/` | Validar entradas (Zod), reglas de negocio, no exponer secretos |
+| **Base de datos** | Neon (remoto) + `sql/schema.sql` | Persistencia relacional, consultas SQL parametrizadas |
 
-| Capa | Responsabilidad |
-|------|-----------------|
-| **Cliente (móvil)** | UI, experiencia de usuario, llamadas HTTP a la API |
-| **API (servidor)** | Validar entradas, autenticación/autorización, reglas de negocio, no exponer secretos |
-| **Base de datos** | Persistencia relacional, consultas SQL |
+### Flujo de una petición típica (GET notas)
 
-La API actúa como **guardián**: comprueba que los datos que llegan son correctos (p. ej. con **Zod**) y que el cliente tiene permiso para la operación. La app solo conoce la URL pública de la API, no las credenciales de PostgreSQL.
+1. El usuario abre la app → `StoreHydrationGate` llama a `fetchNotes()`.
+2. El store invoca `getNotes()` en `lib/api.ts`.
+3. El cliente hace `GET {EXPO_PUBLIC_API_URL}/notes`.
+4. Next.js ejecuta `GET` en `app/api/notes/route.ts`.
+5. La ruta llama a `query(NOTES_LIST_SQL)` → Neon ejecuta el SQL con JOINs.
+6. La API devuelve JSON (snake_case) → el cliente mapea a camelCase y reparte en `notes`, `checklists`, `ideas`.
 
-En NoteFlow, la fase actual del móvil sigue usando **AsyncStorage** (solo dispositivo). La API prepara la sincronización en nube cuando el curso lo pida.
+```text
+Pantalla → Zustand → lib/api.ts → fetch → route.ts → db.ts → Neon
+                ↑                                              │
+                └──────── JSON (ApiNoteRow[]) ◄────────────────┘
+```
+
+### Estructura del proyecto backend
+
+```text
+noteflow-api/
+  app/api/
+    notes/route.ts                    # GET (lista), POST (crear)
+    notes/[id]/route.ts               # GET, PATCH, DELETE por id
+    notes/[id]/checklist-items/route.ts  # GET, POST ítems de una nota
+    checklist-items/[itemId]/route.ts    # PATCH, DELETE ítem suelto
+  lib/
+    db.ts                             # Cliente Neon + query() parametrizada
+    noteQueries.ts                    # SQL reutilizable con JOINs
+  .env.local                          # DATABASE_URL (no en git)
+  .env.example                        # Plantilla vacía
+sql/
+  schema.sql                          # DDL: tablas y relaciones
+  queries.sql                         # Consulta de referencia con JOINs
+```
 
 ---
 
 ## Fundamentos de base de datos relacional
 
-Las bases de datos relacionales organizan la información en **tablas** (filas + columnas).
-Cada tabla representa una entidad del dominio (por ejemplo, `notes` o `checklist_items`) y se conectan entre sí mediante **claves**.
+Las bases de datos relacionales organizan la información en **tablas** (filas + columnas). Cada tabla representa una entidad del dominio y se conectan mediante **claves foráneas**.
 
 ### ACID (transacciones fiables)
 
-Las propiedades **ACID** garantizan operaciones seguras:
+| Propiedad | Significado | Ejemplo NoteFlow |
+|-----------|-------------|------------------|
+| **Atomicidad** | Todo o nada | Crear nota + ítems en una transacción futura |
+| **Consistencia** | Reglas siempre válidas | `type` solo puede ser `note`, `checklist` o `idea` |
+| **Aislamiento** | Transacciones no se pisan | Dos PATCH simultáneos no corrompen datos |
+| **Durabilidad** | Lo confirmado persiste | Tras archivar, el dato sigue en Neon |
 
-- **Atomicidad**: o se guarda todo o no se guarda nada.
-- **Consistencia**: los datos siempre respetan reglas válidas.
-- **Aislamiento**: transacciones concurrentes no se pisan entre sí.
-- **Durabilidad**: una vez confirmado, el cambio persiste aunque haya caída del servidor.
+### Primary Key y Foreign Key
 
-Ejemplo NoteFlow: sin atomicidad, podrías crear una nota pero fallar al guardar sus ítems de checklist, dejando datos inconsistentes.
-
-### Primary Key
-
-La **Primary Key** es un identificador único e irrepetible de cada fila.
-En apps móviles suele preferirse **UUID** frente a enteros autoincrementales, porque el cliente puede generar el id offline y sincronizar después cuando recupere conexión.
-
-### Foreign Key
-
-Una **Foreign Key** es una columna que referencia la primary key de otra tabla.
-Ejemplo: `checklist_items.note_id` apunta a `notes.id`.
-
-Con `ON DELETE CASCADE`, al borrar una nota se eliminan automáticamente sus checklist items asociados, evitando registros huérfanos.
+- **Primary Key (PK):** identificador único de cada fila. En NoteFlow usamos **UUID** (`gen_random_uuid()`), útil para sincronización offline futura.
+- **Foreign Key (FK):** columna que referencia la PK de otra tabla. Ejemplo: `checklist_items.note_id → notes.id`.
+- **`ON DELETE CASCADE`:** al borrar una nota, se eliminan automáticamente sus `checklist_items` y `note_tags` (sin registros huérfanos).
 
 ### DDL vs DML
 
-- **DDL** (Data Definition Language): define estructura (`CREATE`, `ALTER`, `DROP`).
-- **DML** (Data Manipulation Language): manipula datos (`SELECT`, `INSERT`, `UPDATE`, `DELETE`).
+| Tipo | Comandos | Uso en NoteFlow |
+|------|----------|-----------------|
+| **DDL** | `CREATE`, `ALTER`, `DROP` | `sql/schema.sql` al crear el proyecto en Neon |
+| **DML** | `SELECT`, `INSERT`, `UPDATE`, `DELETE` | Todas las rutas API en runtime |
 
 ---
 
 ## Esquema SQL y diagrama entidad-relación
 
-Script del esquema: [`../sql/schema.sql`](../sql/schema.sql)
+Script: [`../sql/schema.sql`](../sql/schema.sql)
 
-### Tablas y columnas
+### Tablas
 
-1. **`notes`**
-   - `id` (UUID, PK, `gen_random_uuid()`)
-   - `title` (VARCHAR(255), NOT NULL)
-   - `content` (TEXT)
-   - `type` (VARCHAR(50), NOT NULL, `CHECK ('note' | 'checklist' | 'idea')`)
-   - `color` (VARCHAR(7))
-   - `created_at` (TIMESTAMPTZ, `NOW()`)
-   - `updated_at` (TIMESTAMPTZ, `NOW()`)
+**`notes`** — entidad principal (los tres tipos de contenido comparten tabla)
 
-2. **`checklist_items`**
-   - `id` (UUID, PK, `gen_random_uuid()`)
-   - `note_id` (UUID, FK → `notes.id`, NOT NULL, `ON DELETE CASCADE`)
-   - `text` (VARCHAR(255), NOT NULL)
-   - `is_completed` (BOOLEAN, `FALSE`)
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | UUID PK | `gen_random_uuid()` |
+| `title` | VARCHAR(255) NOT NULL | Mín. 3 caracteres (validado también en Zod) |
+| `content` | TEXT | Texto de nota; null en checklist/idea |
+| `type` | VARCHAR(50) | `CHECK`: `note` \| `checklist` \| `idea` |
+| `color` | VARCHAR(7) | Hex para ideas |
+| `is_archived` | BOOLEAN | Default `FALSE`; archivado sin borrar |
+| `created_at` / `updated_at` | TIMESTAMPTZ | Auditoría temporal |
 
-3. **`note_tags`**
-   - `id` (UUID, PK, `gen_random_uuid()`)
-   - `note_id` (UUID, FK → `notes.id`, NOT NULL, `ON DELETE CASCADE`)
-   - `tag` (VARCHAR(100), NOT NULL)
+**`checklist_items`** — tareas de una checklist
 
-### Relaciones
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | UUID PK | |
+| `note_id` | UUID FK → `notes.id` | `ON DELETE CASCADE` |
+| `text` | VARCHAR(255) NOT NULL | |
+| `is_completed` | BOOLEAN | Default `FALSE` |
 
-- **`notes` 1 ── N `checklist_items`**: una nota tipo checklist puede tener varios ítems.
-- **`notes` 1 ── N `note_tags`**: una nota/idea puede tener múltiples etiquetas.
-- Ambas relaciones usan **`ON DELETE CASCADE`** para evitar registros huérfanos.
+**`note_tags`** — etiquetas de ideas (y extensible a otros tipos)
 
-### Diagrama ER (texto)
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | UUID PK | |
+| `note_id` | UUID FK → `notes.id` | `ON DELETE CASCADE` |
+| `tag` | VARCHAR(100) NOT NULL | |
+
+### Diagrama ER
 
 ```text
 notes (id PK)
-  ├── checklist_items (id PK, note_id FK -> notes.id, ON DELETE CASCADE)
-  └── note_tags       (id PK, note_id FK -> notes.id, ON DELETE CASCADE)
+  ├── checklist_items (id PK, note_id FK → notes.id, ON DELETE CASCADE)
+  └── note_tags       (id PK, note_id FK → notes.id, ON DELETE CASCADE)
 ```
 
 ---
 
 ## JOINs: INNER JOIN vs LEFT JOIN
 
-Cuando una entidad tiene **relaciones 1 ── N** (una nota, muchos ítems), a menudo necesitas leer la tabla padre y sus hijos en **una sola consulta**. Ahí entran los **JOINs**: unen filas de dos tablas según una condición (normalmente `tabla_hija.foreign_key = tabla_padre.id`).
+Cuando una entidad tiene relaciones **1 ── N** (una nota, muchos ítems), a menudo necesitas leer padre e hijos en **una sola consulta**. Los **JOINs** unen filas de dos tablas según una condición (`tabla_hija.foreign_key = tabla_padre.id`).
 
-Consulta de referencia con agregación JSON: [`../sql/queries.sql`](../sql/queries.sql).
+Consulta de referencia: [`../sql/queries.sql`](../sql/queries.sql)  
+Implementación en código: [`noteflow-api/lib/noteQueries.ts`](../noteflow-api/lib/noteQueries.ts)
 
 ### INNER JOIN
 
-Devuelve **solo** las filas donde **hay coincidencia en ambas tablas**.
+Devuelve **solo** filas donde **hay coincidencia en ambas tablas**.
 
 ```sql
 SELECT n.title, ci.text
@@ -124,12 +153,12 @@ FROM notes n
 INNER JOIN checklist_items ci ON n.id = ci.note_id;
 ```
 
-- Si una nota **no tiene** ítems de checklist, **no aparece** en el resultado.
-- **Cuándo usarlo en NoteFlow:** listar únicamente checklists que **ya tienen al menos un ítem** (p. ej. informe de “tareas en curso” donde un checklist vacío no aporta).
+- Una nota **sin ítems** no aparece.
+- **Cuándo usarlo:** informes donde solo interesan checklists **con al menos un ítem** (p. ej. “tareas en curso”, excluyendo listas vacías).
 
 ### LEFT JOIN
 
-Devuelve **todas** las filas de la tabla **izquierda** (`notes`) y las coincidentes de la derecha; si no hay coincidencia, las columnas de la derecha son **NULL**.
+Devuelve **todas** las filas de la tabla **izquierda** (`notes`) y las coincidentes de la derecha; si no hay match, las columnas derechas son **NULL**.
 
 ```sql
 SELECT n.*, ci.text
@@ -137,88 +166,139 @@ FROM notes n
 LEFT JOIN checklist_items ci ON n.id = ci.note_id;
 ```
 
-- Una nota **sin ítems** sigue apareciendo; `ci.text` será `NULL`.
-- **Cuándo usarlo en NoteFlow:** listado general de notas (incluidas tipo `note` o `idea` sin checklist), detalle de una nota con sus ítems opcionales, o la consulta agregada de `queries.sql` que junta ítems y tags en arrays JSON.
+- Una nota **sin ítems** sigue apareciendo (`ci.text` = NULL).
+- **Cuándo usarlo:** listado general (`GET /api/notes`), detalle con relaciones opcionales, notas tipo `note` o `idea` sin checklist.
+
+### Agregación con `json_agg` y `GROUP BY`
+
+Con varios hijos por nota, un JOIN “plano” duplica filas de la nota padre. NoteFlow agrupa en arrays JSON:
+
+```sql
+SELECT
+  n.*,
+  json_agg(ci.*) FILTER (WHERE ci.id IS NOT NULL) AS items,
+  json_agg(nt.tag) FILTER (WHERE nt.id IS NOT NULL) AS tags
+FROM notes n
+LEFT JOIN checklist_items ci ON n.id = ci.note_id
+LEFT JOIN note_tags nt ON n.id = nt.note_id
+GROUP BY n.id
+ORDER BY n.created_at DESC;
+```
+
+- **`json_agg`:** convierte filas hijas en un array JSON por nota.
+- **`FILTER (WHERE … IS NOT NULL)`:** evita `[null]` cuando no hay hijos; el cliente recibe `null` o array vacío según el driver.
+- **`GROUP BY n.id`:** obligatorio al usar funciones de agregación; **una fila por nota**.
 
 ### Comparación rápida
 
 | Aspecto | INNER JOIN | LEFT JOIN |
 |---------|------------|-----------|
-| Tabla izquierda sin match en la derecha | Se **excluye** | Se **incluye** (NULL a la derecha) |
-| Caso NoteFlow | Solo notas **con** ítems | **Todas** las notas, con o sin ítems/tags |
-| Riesgo | “Perder” notas vacías en listados | Más filas antes de `GROUP BY`; usar `FILTER` en agregados |
-
-En `queries.sql`, dos `LEFT JOIN` + `json_agg(...) FILTER (WHERE ... IS NOT NULL)` producen **una fila por nota** con arrays `items` y `tags` vacíos (`[]`) cuando no hay hijos, en lugar de omitir la nota o devolver `[null]`.
+| Nota sin hijos | **Excluida** | **Incluida** (NULL a la derecha) |
+| Caso NoteFlow | Solo notas con ítems | **Todas** las notas del listado |
+| Riesgo | “Perder” notas vacías | Más filas antes del `GROUP BY`; usar `FILTER` |
 
 ---
 
 ## Qué es una API REST
 
-**REST** (Representational State Transfer) es un estilo para exponer recursos mediante **HTTP**:
+**REST** (Representational State Transfer) expone **recursos** identificados por URL y operados con **métodos HTTP**:
 
-- Cada recurso tiene una **ruta** (URL), p. ej. `/api/notes`, `/api/notes/abc-123`.
-- Las operaciones se expresan con **métodos HTTP**, no con verbos en la URL (`/deleteNote`).
-- El cuerpo suele ser **JSON**; las respuestas también.
+| Principio | En NoteFlow |
+|-----------|-------------|
+| Recursos con nombre sustantivo | `/api/notes`, `/api/checklist-items/{id}` |
+| Verbos en HTTP, no en la URL | `PATCH /api/notes/{id}` (no `/api/archiveNote`) |
+| Representación JSON | Request y response en `application/json` |
+| Stateless | Cada petición lleva toda la info necesaria (sin sesión aún) |
 
-En **Next.js App Router**, las rutas API viven en `app/api/.../route.ts` y exportan funciones `GET`, `POST`, `PATCH`, `DELETE` según el método.
+En **Next.js App Router**, cada ruta API es un archivo `route.ts` que exporta funciones nombradas según el método: `GET`, `POST`, `PATCH`, `DELETE`.
+
+### Recursos del dominio NoteFlow
+
+| Recurso | Ruta base | Descripción |
+|---------|-----------|-------------|
+| Notas (todos los tipos) | `/api/notes` | Nota, checklist e idea comparten tabla `notes` |
+| Nota individual | `/api/notes/{id}` | Detalle, actualización parcial, borrado |
+| Ítems de checklist | `/api/notes/{id}/checklist-items` | Colección anidada bajo la nota padre |
+| Ítem suelto | `/api/checklist-items/{itemId}` | Marcar completado o eliminar sin pasar por la nota |
 
 ---
 
-## Métodos HTTP y operaciones de datos
+## Métodos HTTP y operaciones CRUD
 
-| Método | Operación típica | Ejemplo NoteFlow |
-|--------|-------------------|------------------|
-| **GET** | Leer (lista o detalle) | Listar notas del usuario |
-| **POST** | Crear | Crear una nota nueva |
-| **PATCH** | Modificar **parcialmente** | Archivar o actualizar título |
-| **DELETE** | Eliminar | Borrar definitivamente |
+| Método | Operación | Idempotente | Body | Ejemplo NoteFlow |
+|--------|-----------|-------------|------|------------------|
+| **GET** | Leer | Sí | No | Listar todas las notas |
+| **POST** | Crear | No | Sí (JSON) | Crear nota o ítem |
+| **PATCH** | Actualizar parcial | No | Sí (solo campos a cambiar) | Archivar (`is_archived: true`) |
+| **DELETE** | Eliminar | Sí | No | Borrado definitivo |
 
-Convenciones útiles:
+Convenciones usadas en este repo:
 
-- **GET** y **DELETE** no llevan cuerpo con datos sensibles de creación; el id va en la ruta.
-- **POST** crea; la respuesta suele ser **201 Created** con el recurso creado.
-- **PATCH** actualiza solo los campos enviados (no hace falta mandar el objeto entero).
+- **POST** exitoso → **201 Created** con el recurso creado en el body.
+- **PATCH** / **GET** exitoso → **200 OK** con el recurso.
+- **DELETE** exitoso → **204 No Content** (sin body).
+- Validación fallida → **400** con `{ "errors": [...] }` (issues de Zod).
+- Recurso inexistente → **404** con `{ "error": "..." }`.
+- Fallo interno → **500** con mensaje genérico (detalle solo en logs del servidor).
+
+### Formato de respuesta de una nota (GET list / GET one / POST / PATCH)
+
+La API devuelve **snake_case** (convención PostgreSQL/JSON del servidor). El móvil lo mapea a camelCase en `mapApiRowToAnyNote`.
+
+```json
+{
+  "id": "uuid",
+  "title": "Reunión cliente Acme",
+  "content": "Texto de la nota",
+  "type": "note",
+  "color": null,
+  "is_archived": false,
+  "created_at": "2026-05-30T12:00:00.000Z",
+  "updated_at": "2026-05-30T12:00:00.000Z",
+  "items": null,
+  "tags": null
+}
+```
+
+Para `type: "checklist"`, `items` es un array de objetos `{ id, note_id, text, is_completed }`.  
+Para `type: "idea"`, `tags` es un array de strings y `color` suele ser un hex.
 
 ---
 
 ## Códigos de estado HTTP
 
-El servidor comunica el **resultado** de la petición con un número. Los más usados en NoteFlow:
-
-| Código | Significado | Cuándo usarlo |
-|--------|-------------|---------------|
-| **200 OK** | Éxito en lectura o actualización | GET, PATCH correctos |
-| **201 Created** | Recurso creado | POST correcto |
-| **400 Bad Request** | Datos inválidos (validación Zod, JSON mal formado) | El cliente mandó algo incorrecto |
-| **401 Unauthorized** | No autenticado | Falta token o sesión inválida |
-| **404 Not Found** | Recurso no existe | Id inexistente |
-| **500 Internal Server Error** | Fallo en el servidor | Error inesperado en la API o BD |
+| Código | Significado | Cuándo en NoteFlow |
+|--------|-------------|-------------------|
+| **200** | OK | GET, PATCH correctos |
+| **201** | Created | POST correcto |
+| **204** | No Content | DELETE correcto |
+| **400** | Bad Request | UUID inválido, body vacío en PATCH, Zod falla |
+| **404** | Not Found | Id de nota o ítem inexistente |
+| **500** | Internal Server Error | Error de BD o excepción no controlada |
 
 ### Seguridad en errores
 
-**Nunca** devuelvas al cliente el error crudo de PostgreSQL (`relation "notes" does not exist`, detalle de constraint, etc.). Eso es **información interna** que un atacante podría explotar.
+**Nunca** devuelvas al cliente el error crudo de PostgreSQL. Patrón del repo:
 
-Patrón recomendado:
+1. `console.error('[GET /api/notes]', error)` en el servidor.
+2. Respuesta al móvil: `{ "error": "Error interno" }` con **500**.
 
-1. Registrar el error real en **logs del servidor** (solo backend).
-2. Responder al móvil con un mensaje **genérico**, p. ej. `{ "error": "No se pudo completar la operación" }` y código **500**.
-
-Para validación (Zod), **400** con mensajes **claros y seguros** («El título debe tener al menos 3 caracteres») está bien: no revelan estructura interna de la BD.
+Para validación Zod, **400** con mensajes claros («El título debe tener al menos 3 caracteres») es aceptable: no revelan estructura interna de la BD.
 
 ---
 
-## Stack del backend en este repo
+## Stack del backend
 
 | Herramienta | Rol |
 |-------------|-----|
-| **Next.js** (`noteflow-api/`) | Framework del servidor; rutas API en `app/api/` |
-| **Neon** (`@neondatabase/serverless`) | PostgreSQL serverless; conexión HTTP sin mantener pool en serverless |
-| **Zod** | Validar body y query antes de ejecutar SQL |
-| **Variables de entorno** | `DATABASE_URL` solo en `.env.local` (ignorado por git) |
+| **Next.js 16** | Route Handlers en `app/api/` |
+| **Neon** (`@neondatabase/serverless`) | PostgreSQL serverless vía HTTP |
+| **Zod** | Validación de body y params antes de SQL |
+| **Variables de entorno** | `DATABASE_URL` solo en `.env.local` |
 
 ### Conexión a la base de datos
 
-Módulo: [`noteflow-api/lib/db.ts`](../noteflow-api/lib/db.ts)
+[`noteflow-api/lib/db.ts`](../noteflow-api/lib/db.ts):
 
 ```ts
 import { neon } from '@neondatabase/serverless';
@@ -226,94 +306,57 @@ import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL!);
 
 export async function query<T>(text: string, params?: unknown[]): Promise<T[]> {
-  const result = await sql(text, params);
+  const result = params?.length
+    ? await sql.query(text, params)
+    : await sql.query(text);
   return result as T[];
 }
 ```
 
-### Configuración local (orden obligatorio)
-
-1. Crear proyecto: `npx create-next-app@latest noteflow-api --typescript --app --no-tailwind --no-src-dir`
-2. `npm install @neondatabase/serverless zod`
-3. Crear **`.env.local`** con tu `DATABASE_URL` de Neon.
-4. Añadir **`.env.local`** al `.gitignore` (ya cubierto por `.env*`).
-5. Commitear solo **`.env.example`** como plantilla (`DATABASE_URL=`).
-
-```bash
-cd noteflow-api
-cp .env.example .env.local
-# Editar .env.local con el connection string del panel de Neon
-npm run dev
-```
+Todas las rutas usan **`query(text, [param1, param2, …])`** con placeholders `$1`, `$2` — ver [`docs/seguridad-api.md`](seguridad-api.md).
 
 ---
 
 ## Relación con la app móvil
 
-| Ahora (móvil) | Con backend (futuro) |
-|---------------|----------------------|
-| Zustand + AsyncStorage | Zustand + `fetch` a `noteflow-api` |
-| Datos solo en el dispositivo | Datos en Neon, opcional caché local |
-| Sin autenticación en API | Token / sesión en cabeceras HTTP |
+| Aspecto | Implementación actual |
+|---------|------------------------|
+| Fuente de verdad | API REST (Neon), no AsyncStorage |
+| Cliente HTTP | `lib/api.ts` (`getNotes`, `createNote`, `updateNote`, …) |
+| Estado UI | `store/notesStore.ts` (Zustand, acciones async) |
+| Carga inicial | `StoreHydrationGate` → `fetchNotes()` al abrir la app |
+| URL de la API | `EXPO_PUBLIC_API_URL` en `.env` del proyecto raíz |
+| Mapeo de datos | snake_case (API) → camelCase (tipos en `types/`) |
 
-La app móvil seguirá validando con Zod **antes** de enviar; la API **vuelve a validar** (defensa en profundidad).
+La app valida con Zod **antes** de enviar; la API **vuelve a validar** (defensa en profundidad). Ver [`docs/seguridad-api.md`](seguridad-api.md).
+
+### Datos demo
+
+Script opcional para poblar Neon:
+
+```bash
+node scripts/seedDemoApi.mjs
+```
+
+Requiere la API en marcha (`npm run dev` dentro de `noteflow-api`).
 
 ---
 
-## Pruebas CRUD reales (rutas API)
+## Referencia rápida de endpoints
 
-### Notas
+Detalle completo (body, respuestas, variables): sección **Backend** del [`README.md`](../README.md).
 
-Handlers en:
-
-- `noteflow-api/app/api/notes/route.ts` → `GET`, `POST`
-- `noteflow-api/app/api/notes/[id]/route.ts` → `GET`, `PATCH`, `DELETE`
-
-Respuestas observadas en pruebas HTTP locales:
-
-- `GET /api/notes` → **200** (array de notas; inicialmente vacío `[]`).
-- `POST /api/notes` con body válido → **201** (nota creada con `id` UUID).
-- `POST /api/notes` con body inválido (`title` corto) → **400** con `errors` de Zod.
-- `GET /api/notes/not-a-uuid` → **400** (`El id debe ser un UUID válido`).
-- `PATCH /api/notes/not-a-uuid` → **400** (`El id debe ser un UUID válido`).
-- `PATCH /api/notes/{uuid}` con body `{}` → **400** (`Debes enviar al menos un campo para actualizar`).
-- `PATCH /api/notes/{uuid}` con body válido → **200** (nota actualizada).
-- `DELETE /api/notes/{uuid}` → **204** (sin body).
-
-Nota: cuando `DELETE` responde **204 No Content** (caso exitoso), no devuelve body. Además, por `ON DELETE CASCADE`, se eliminan automáticamente `checklist_items` y `note_tags` asociados a la nota.
-
-### Ítems de checklist
-
-Handlers en:
-
-- `noteflow-api/app/api/notes/[id]/checklist-items/route.ts` → `GET`, `POST`
-- `noteflow-api/app/api/checklist-items/[itemId]/route.ts` → `PATCH`, `DELETE`
-
-| Método | Ruta | Body (JSON) | Respuesta esperada |
-|--------|------|-------------|-------------------|
-| **GET** | `/api/notes/{noteId}/checklist-items` | — | **200** array de ítems; **404** si la nota no existe |
-| **POST** | `/api/notes/{noteId}/checklist-items` | `{ "text": "...", "is_completed": false }` | **201** ítem creado; **400** validación Zod |
-| **PATCH** | `/api/checklist-items/{itemId}` | `{ "is_completed": true }` | **200** ítem actualizado; **404** si no existe |
-| **DELETE** | `/api/checklist-items/{itemId}` | — | **204** sin body; **404** si no existe |
-
-Ejemplo de flujo (con `noteId` e `itemId` UUID reales):
-
-```bash
-# Crear nota tipo checklist
-curl -X POST http://localhost:3000/api/notes \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Seguimiento cliente","type":"checklist"}'
-
-# Añadir ítem
-curl -X POST http://localhost:3000/api/notes/{noteId}/checklist-items \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Enviar acta"}'
-
-# Marcar hecho
-curl -X PATCH http://localhost:3000/api/checklist-items/{itemId} \
-  -H "Content-Type: application/json" \
-  -d '{"is_completed":true}'
-```
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/notes` | Lista todas las notas con `items` y `tags` agregados |
+| POST | `/api/notes` | Crea nota, checklist o idea |
+| GET | `/api/notes/{id}` | Detalle de una nota |
+| PATCH | `/api/notes/{id}` | Actualiza campos parciales (incl. `is_archived`) |
+| DELETE | `/api/notes/{id}` | Borra nota y cascada de hijos |
+| GET | `/api/notes/{id}/checklist-items` | Lista ítems de una checklist |
+| POST | `/api/notes/{id}/checklist-items` | Añade ítem a una checklist |
+| PATCH | `/api/checklist-items/{itemId}` | Marca/desmarca `is_completed` |
+| DELETE | `/api/checklist-items/{itemId}` | Elimina un ítem |
 
 ---
 
@@ -321,4 +364,6 @@ curl -X PATCH http://localhost:3000/api/checklist-items/{itemId} \
 
 - [Neon — serverless driver](https://neon.tech/docs/serverless/serverless-driver)
 - [Next.js — Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
-- Persistencia solo local (fase anterior): [`persistencia.md`](persistencia.md)
+- Seguridad (SQL injection, secretos): [`seguridad-api.md`](seguridad-api.md)
+- Modelo de datos en el móvil: [`modelo-datos.md`](modelo-datos.md)
+- Esquema SQL: [`../sql/schema.sql`](../sql/schema.sql)

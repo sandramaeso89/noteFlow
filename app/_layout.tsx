@@ -11,6 +11,7 @@ import { PaperProvider, useTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { StoreHydrationGate } from '../components/StoreHydrationGate';
+import { AuthGate } from '../components/AuthGate';
 import { getNoteFlowPaperTheme } from '../constants/theme';
 
 // Combina useColorScheme con Appearance nativo: en algunos dispositivos el hook
@@ -44,6 +45,7 @@ function RootNavigator() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       {/* Modal para crear nota/checklist/idea sin salir del contexto de tabs */}
       <Stack.Screen
@@ -64,9 +66,11 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <StoreHydrationGate>
-          <RootNavigator />
-        </StoreHydrationGate>
+        <AuthGate>
+          <StoreHydrationGate>
+            <RootNavigator />
+          </StoreHydrationGate>
+        </AuthGate>
       </PaperProvider>
     </SafeAreaProvider>
   );

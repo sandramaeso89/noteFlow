@@ -2,11 +2,12 @@
  * Detalle de checklist: marca ítems, muestra progreso y dispara haptic al completar todo.
  */
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ChecklistItemRow } from '../../../components/detail/ChecklistItemRow';
 import { DetailHeaderMenu } from '../../../components/detail/DetailHeaderMenu';
 import { spacing, typography } from '../../../constants/theme';
+import { useDetailRedirectIfMissing } from '../../../hooks/useDetailRedirectIfMissing';
 import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
 import { useNotesStore } from '../../../store/notesStore';
 import { confirmArchive, confirmPermanentDelete } from '../../../utils/confirmActions';
@@ -22,13 +23,14 @@ export default function ChecklistDetailScreen() {
   const unarchiveChecklist = useNotesStore((s) => s.unarchiveChecklist);
   const deleteChecklist = useNotesStore((s) => s.deleteChecklist);
 
-  if (!checklist) {
-    // Ruta con id inválido: mensaje amigable en lugar de pantalla en blanco.
+  const ready = useDetailRedirectIfMissing(!!checklist, '/checklists');
+
+  if (!ready || !checklist) {
     return (
       <>
         <Stack.Screen options={{ title: 'Checklist' }} />
-        <View style={[styles.screen, { backgroundColor: colors.background }]}>
-          <Text style={{ color: colors.textSecondary }}>No se encontró esta checklist.</Text>
+        <View style={[styles.screen, styles.centered, { backgroundColor: colors.background }]}>
+          <ActivityIndicator color={colors.textPrimary} />
         </View>
       </>
     );
@@ -128,6 +130,7 @@ export default function ChecklistDetailScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: spacing.lg },
+  centered: { alignItems: 'center', justifyContent: 'center' },
   content: { padding: spacing.lg, paddingBottom: spacing.xxxl },
   meta: {
     fontSize: 10,

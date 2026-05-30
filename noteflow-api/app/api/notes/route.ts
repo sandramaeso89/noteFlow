@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { isAuthError, requireAuth } from '@/lib/auth';
 import { query } from '@/lib/db';
-import { NOTES_LIST_SQL } from '@/lib/noteQueries';
+import { NOTE_BY_ID_SQL, NOTES_LIST_SQL } from '@/lib/noteQueries';
 
 const noteSchema = z.object({
   title: z.string().min(3),
@@ -12,9 +13,12 @@ const noteSchema = z.object({
   tags: z.array(z.string().trim().min(1)).optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
-    const notes = await query(NOTES_LIST_SQL);
+    const notes = await query(NOTES_LIST_SQL, [auth.userId]);
     return NextResponse.json(notes);
   } catch (error) {
     console.error('[GET /api/notes]', error);
@@ -23,6 +27,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const body = await request.json();
     const result = noteSchema.safeParse(body);
@@ -32,8 +39,10 @@ export async function POST(request: Request) {
 
     const { title, type, content, color, tags } = result.data;
     const [inserted] = await query<{ id: string }>(
-      'INSERT INTO notes (title, type, content, color) VALUES ($1, $2, $3, $4) RETURNING id',
-      [title, type, content ?? null, color ?? null]
+      `INSERT INTO notes (user_id, title, type, content, color)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id`,
+      [auth.userId, title, type, content ?? null, color ?? null]
     );
 
     if (tags?.length) {
@@ -45,20 +54,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const [note] = await query(
-      `SELECT
-        n.*,
-        json_agg(ci.*) FILTER (WHERE ci.id IS NOT NULL) AS items,
-        json_agg(nt.tag) FILTER (WHERE nt.id IS NOT NULL) AS tags
-      FROM notes n
-      LEFT JOIN checklist_items ci ON n.id = ci.note_id
-      LEFT JOIN note_tags nt ON n.id = nt.note_id
-      WHERE n.id = $1
-      GROUP BY n.id
-      LIMIT 1`,
-      [inserted.id]
-    );
-
+    const [note] = await query(NOTE_BY_ID_SQL, [auth.userId, inserted.id]);
     return NextResponse.json(note, { status: 201 });
   } catch (error) {
     console.error('[POST /api/notes]', error);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { isAuthError, requireAuth } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { NOTE_BY_ID_SQL } from '@/lib/noteQueries';
 
@@ -29,7 +30,10 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
@@ -37,20 +41,22 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ errors: parsedParams.error.issues }, { status: 400 });
     }
 
-    const [note] = await query(NOTE_BY_ID_SQL, [parsedParams.data.id]);
+    const [note] = await query(NOTE_BY_ID_SQL, [auth.userId, parsedParams.data.id]);
     if (!note) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }
 
     return NextResponse.json(note);
   } catch (error) {
-    // Log solo servidor para diagnosticar fallos de BD sin filtrar detalle al cliente.
     console.error('[GET /api/notes/:id]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
@@ -69,51 +75,57 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (parsedBody.data.title !== undefined) {
       values.push(parsedBody.data.title);
-      setClauses.push(`title = $${values.length + 1}`);
+      setClauses.push(`title = $${values.length + 2}`);
     }
     if (parsedBody.data.type !== undefined) {
       values.push(parsedBody.data.type);
-      setClauses.push(`type = $${values.length + 1}`);
+      setClauses.push(`type = $${values.length + 2}`);
     }
     if (parsedBody.data.content !== undefined) {
       values.push(parsedBody.data.content);
-      setClauses.push(`content = $${values.length + 1}`);
+      setClauses.push(`content = $${values.length + 2}`);
     }
     if (parsedBody.data.color !== undefined) {
       values.push(parsedBody.data.color);
-      setClauses.push(`color = $${values.length + 1}`);
+      setClauses.push(`color = $${values.length + 2}`);
     }
     if (parsedBody.data.is_archived !== undefined) {
       values.push(parsedBody.data.is_archived);
-      setClauses.push(`is_archived = $${values.length + 1}`);
+      setClauses.push(`is_archived = $${values.length + 2}`);
     }
 
     const sql = `
       UPDATE notes
       SET ${setClauses.join(', ')}, updated_at = NOW()
-      WHERE id = $1
+      WHERE id = $1 AND user_id = $${values.length + 2}
       RETURNING id
     `;
 
-    const updated = await query<{ id: string }>(sql, [parsedParams.data.id, ...values]);
+    const updated = await query<{ id: string }>(sql, [
+      parsedParams.data.id,
+      ...values,
+      auth.userId,
+    ]);
     if (updated.length === 0) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }
 
-    const [note] = await query(NOTE_BY_ID_SQL, [parsedParams.data.id]);
+    const [note] = await query(NOTE_BY_ID_SQL, [auth.userId, parsedParams.data.id]);
     if (!note) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }
 
     return NextResponse.json(note);
   } catch (error) {
-    // Log solo servidor para diagnosticar fallos de BD sin filtrar detalle al cliente.
     console.error('[PATCH /api/notes/:id]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
+  const auth = await requireAuth(request);
+  if (isAuthError(auth)) return auth;
+
   try {
     const rawParams = await context.params;
     const parsedParams = paramsSchema.safeParse(rawParams);
@@ -121,14 +133,16 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ errors: parsedParams.error.issues }, { status: 400 });
     }
 
-    const deleted = await query('DELETE FROM notes WHERE id = $1 RETURNING id', [parsedParams.data.id]);
+    const deleted = await query(
+      'DELETE FROM notes WHERE id = $1 AND user_id = $2 RETURNING id',
+      [parsedParams.data.id, auth.userId]
+    );
     if (deleted.length === 0) {
       return NextResponse.json({ error: 'Nota no encontrada' }, { status: 404 });
     }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    // Log solo servidor para diagnosticar fallos de BD sin filtrar detalle al cliente.
     console.error('[DELETE /api/notes/:id]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
