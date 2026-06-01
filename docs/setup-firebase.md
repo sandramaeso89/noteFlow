@@ -50,8 +50,8 @@ Firebase es una **fase nueva del curso**. Instalar las librerías **no sustituye
 | Plugin `@react-native-firebase/app` en `app.json` | Hecho | `app.json` → `plugins` |
 | Rutas a archivos de config nativos | Hecho | `android.googleServicesFile`, `ios.googleServicesFile` en `app.json` |
 | Identificadores Android / iOS | Hecho | `noteFlow.ANDROID` / `noteFlowIOS` — alineados con Firebase |
-| Plugins `auth` (y `firestore` cuando toque) | Parcial | `@react-native-firebase/auth` en `plugins`; firestore pendiente si el tutor lo pide |
-| Código que use Firebase | Pendiente | Sin imports en `app/` ni `lib/` todavía |
+| Plugins `auth` + `firestore` | Hecho | `app.json` → `plugins` |
+| Código Auth + perfil Firestore | Hecho | `lib/firebaseAuth.ts`, `app/login.tsx`, `app/register.tsx` |
 | `google-services.json` / `GoogleService-Info.plist` en la raíz | Hecho | Raíz del repo, alineados con `app.json` |
 | **Development Build (EAS)** | Pendiente | `@react-native-firebase` **no funciona en Expo Go** — ver abajo |
 
@@ -136,7 +136,21 @@ En NoteFlow también se mantienen `expo-router`, `expo-secure-store` y `@react-n
 
 ---
 
-## El comando `npx expo install …`
+## Flujo Auth + perfil en Firestore (implementado)
+
+| Pieza | Dónde |
+|-------|--------|
+| Registro (Auth + doc `users/{uid}`) | `lib/firebaseAuth.ts` → `registerWithProfile` |
+| Login | `lib/firebaseAuth.ts` → `loginWithEmail` |
+| Pantalla login | `app/login.tsx` |
+| Pantalla registro (campo nombre) | `app/register.tsx` |
+| Validación Zod | `schemas/authSchemas.ts` |
+| Estado global sesión | `store/authStore.ts` + `auth().onAuthStateChanged` en `app/_layout.tsx` |
+| Colección Firestore | `users` — campos: `name`, `email`, `createdAt`, `avatarUrl` |
+
+**Notas:** la API REST (Neon) sigue en el repo; con sesión Firebase las listas pueden ir vacías hasta migrar notas a Firestore. Probar requiere **Development Build**.
+
+---
 
 **Qué hace:** instala las tres librerías con versiones compatibles con **Expo SDK 54** y actualiza `package.json` / `package-lock.json`.
 

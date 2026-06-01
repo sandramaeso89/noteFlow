@@ -1,5 +1,5 @@
 /**
- * Pantalla de inicio de sesión (Firebase Auth — email/contraseña).
+ * Pantalla de registro: Firebase Auth + documento users/{uid} en Firestore.
  */
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
@@ -10,15 +10,16 @@ import { AuthScreenFrame } from '../components/auth/AuthScreenFrame';
 import { FieldError } from '../components/forms/FieldError';
 import { spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
-import { authFieldErrors, loginFormSchema } from '../schemas/authSchemas';
+import { authFieldErrors, registerFormSchema } from '../schemas/authSchemas';
 import { useAuthStore } from '../store/authStore';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const colors = useNoteFlowColors();
-  const login = useAuthStore((s) => s.login);
+  const register = useAuthStore((s) => s.register);
   const storeError = useAuthStore((s) => s.error);
   const clearError = useAuthStore((s) => s.clearError);
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -28,14 +29,14 @@ export default function LoginScreen() {
     clearError();
     setFieldErrors({});
 
-    const parsed = loginFormSchema.safeParse({ email, password });
+    const parsed = registerFormSchema.safeParse({ name, email, password });
     if (!parsed.success) {
       setFieldErrors(authFieldErrors(parsed.error));
       return;
     }
 
     setIsSubmitting(true);
-    const ok = await login(parsed.data.email, parsed.data.password);
+    const ok = await register(parsed.data.email, parsed.data.password, parsed.data.name);
     setIsSubmitting(false);
 
     if (ok) router.replace('/notas');
@@ -43,9 +44,22 @@ export default function LoginScreen() {
 
   return (
     <AuthScreenFrame
-      title="Iniciar sesión"
-      subtitle="Accede con tu cuenta de NoteFlow"
+      title="Crear cuenta"
+      subtitle="Regístrate para guardar tus notas en la nube"
     >
+      <View>
+        <TextInput
+          label="Nombre"
+          value={name}
+          onChangeText={setName}
+          autoComplete="name"
+          mode="outlined"
+          style={styles.input}
+          error={!!fieldErrors.name}
+        />
+        <FieldError message={fieldErrors.name} />
+      </View>
+
       <View>
         <TextInput
           label="Email"
@@ -67,7 +81,7 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          autoComplete="password"
+          autoComplete="new-password"
           mode="outlined"
           style={styles.input}
           error={!!fieldErrors.password}
@@ -89,12 +103,12 @@ export default function LoginScreen() {
         buttonColor={colors.fill}
         style={styles.button}
       >
-        Entrar
+        Crear cuenta
       </Button>
 
-      <Link href="/register" asChild>
+      <Link href="/login" asChild>
         <Button mode="text" onPress={clearError}>
-          ¿No tienes cuenta? Regístrate
+          ¿Ya tienes cuenta? Entra
         </Button>
       </Link>
     </AuthScreenFrame>

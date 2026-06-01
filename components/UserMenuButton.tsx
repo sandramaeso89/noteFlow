@@ -57,7 +57,7 @@ export function UserMenuButton() {
     >
       <Menu.Item
         leadingIcon="email-outline"
-        title={user?.email ?? 'Mi cuenta'}
+        title={user?.name ?? user?.email ?? 'Mi cuenta'}
         disabled
       />
       <Menu.Item leadingIcon="logout" onPress={handleLogout} title="Cerrar sesión" />

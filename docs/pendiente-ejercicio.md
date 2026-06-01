@@ -164,9 +164,9 @@ npx expo install @react-native-firebase/app @react-native-firebase/auth @react-n
 - [x] Plugin `@react-native-firebase/app` en `app.json` (+ `auth`)
 - [x] `android.package`, `ios.bundleIdentifier` y `googleServicesFile` en `app.json`
 - [x] Archivos `google-services.json` y `GoogleService-Info.plist` en la raíz
-- [ ] Plugin `@react-native-firebase/firestore` en `app.json` (si el tutor lo pide)
+- [x] Plugin `@react-native-firebase/firestore` en `app.json`
 - [ ] `expo-dev-client` + Development Build (no Expo Go)
-- [ ] Código de la app conectado a Firebase
+- [x] Pantallas Login y Registro + perfil `users/{uid}` en Firestore
 
 ---
 

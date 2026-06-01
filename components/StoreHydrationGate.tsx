@@ -1,14 +1,16 @@
 /**
  * Pantalla de carga inicial mientras el store obtiene datos de la API.
- * Evita mostrar listas vacías antes del primer fetchNotes().
+ * Con sesión Firebase (sin JWT) omite la API REST hasta migrar notas a Firestore.
  */
 import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
+import { handleApiUnauthorized } from '../components/AuthGate';
 import { spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
-import { handleApiUnauthorized } from '../components/AuthGate';
+import { setApiAuthToken } from '../lib/api';
+import { getAuthToken } from '../lib/authStorage';
 import { useAuthStore } from '../store/authStore';
 import { useNotesStore } from '../store/notesStore';
 
@@ -24,9 +26,19 @@ export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
   const fetchNotes = useNotesStore((s) => s.fetchNotes);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      void fetchNotes();
-    }
+    if (!isAuthenticated) return;
+
+    void (async () => {
+      const token = await getAuthToken();
+      if (token) {
+        setApiAuthToken(token);
+        await fetchNotes();
+        return;
+      }
+
+      // Firebase Auth: perfil en Firestore; notas REST en fase posterior del curso.
+      useNotesStore.setState({ isLoading: false, error: null });
+    })();
   }, [fetchNotes, isAuthenticated]);
 
   useEffect(() => {
