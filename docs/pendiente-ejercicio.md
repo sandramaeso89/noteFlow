@@ -153,17 +153,18 @@ npx expo install @react-native-firebase/app @react-native-firebase/auth @react-n
 ### Consola Firebase ([console.firebase.google.com](https://console.firebase.google.com))
 
 - [x] Proyecto **noteFlow** creado (plan Spark)
-- [ ] Firestore creado por completo (paso 3 — reglas modo prueba)
-- [ ] Authentication → **Correo electrónico/Contraseña** activado
-- [ ] App Android/iOS registrada (+ Agregar app)
-- [ ] `google-services.json` / `GoogleService-Info.plist` descargados
+- [x] Firestore creado (modo prueba)
+- [x] Authentication → **Correo electrónico/Contraseña** activado
+- [x] App Android/iOS registrada con `noteFlow.ANDROID` / `noteFlowIOS`
+- [x] `google-services.json` / `GoogleService-Info.plist` en la **raíz** del repo
 
 ### Repo
 
 - [x] Paquetes `@react-native-firebase/app`, `auth`, `firestore` en `package.json`
-- [x] Plugins parciales en `app.json` (`app`, `auth`)
-- [ ] Plugin `@react-native-firebase/firestore` en `app.json`
-- [ ] Archivos de config nativos en el proyecto
+- [x] Plugin `@react-native-firebase/app` en `app.json` (+ `auth`)
+- [x] `android.package`, `ios.bundleIdentifier` y `googleServicesFile` en `app.json`
+- [x] Archivos `google-services.json` y `GoogleService-Info.plist` en la raíz
+- [ ] Plugin `@react-native-firebase/firestore` en `app.json` (si el tutor lo pide)
 - [ ] `expo-dev-client` + Development Build (no Expo Go)
 - [ ] Código de la app conectado a Firebase
 
