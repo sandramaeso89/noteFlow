@@ -416,6 +416,7 @@ noteflow-api/
 | `docs/seguridad-api.md` | SQL injection, secretos, variables de entorno |
 | `docs/setup-auth-local.md` | Setup local auth: Neon (SQL) vs `.env.local` (JWT) |
 | `docs/setup-firebase.md` | Firebase: consola, paquetes RN, Firestore, Auth, dev build |
+| `docs/flujo-assets-aws.md` | Diagrama upload S3 + render remoto con caché/placeholder |
 | `docs/auth-api.md` | JWT, register/login, SecureStore |
 | `docs/vercel-deploy.md` | Despliegue Vercel |
 | `docs/modelo-datos.md` | Tipos, `AnyNote`, type guards, `isArchived` |

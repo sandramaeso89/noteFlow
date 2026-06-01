@@ -260,6 +260,14 @@ Más contexto API: [`seguridad-api.md`](seguridad-api.md).
 
 ---
 
+
+## Diagrama de flujo de assets (AWS + render remoto)
+
+- Documento completo: [`flujo-assets-aws.md`](flujo-assets-aws.md)
+- Cubre desde clic en "Subir foto" hasta render con placeholder/caché.
+
+---
+
 ## Referencias
 
 - [Consola Firebase](https://console.firebase.google.com)

@@ -4,11 +4,12 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet } from 'react-native';
+import { Alert, Pressable, StyleSheet } from 'react-native';
 import { Menu } from 'react-native-paper';
 
 import { radius } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
+import { RemoteAvatar } from './images/RemoteAvatar';
 import { useAuthStore } from '../store/authStore';
 import { useNotesStore } from '../store/notesStore';
 
@@ -62,7 +63,7 @@ export function UserMenuButton() {
           accessibilityLabel="Cuenta de usuario"
         >
           {user?.avatarUrl ? (
-            <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+            <RemoteAvatar uri={user.avatarUrl} size={46} />
           ) : (
             <MaterialCommunityIcons
               name="account-circle-outline"
@@ -98,10 +99,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-  },
-  avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: radius.button,
   },
 });
