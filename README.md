@@ -102,10 +102,13 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 | Selección múltiva y archivar en bloque | Hecho | `app/(tabs)/*/index.tsx` |
 | API desplegada en Vercel + Neon | Hecho | https://note-flow-topaz.vercel.app/api |
 | Documentación backend, auth y Vercel | Hecho | `docs/setup-auth-local.md`, `docs/auth-api.md`, `docs/vercel-deploy.md` |
+| Firebase (Auth + Firestore) — fase curso | En progreso | [`docs/setup-firebase.md`](docs/setup-firebase.md) |
 
 **Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
 **Pendiente solo manual (tutor):** auditoría FPS y tema claro/oscuro en simulador — [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
+
+**Nueva fase (Firebase):** proyecto **noteFlow** creado en la consola; paquetes `@react-native-firebase/*` instalados. Siguiente: terminar Firestore y Auth en la consola, registrar app móvil y Development Build — guía paso a paso en [`docs/setup-firebase.md`](docs/setup-firebase.md).
 
 ---
 
@@ -412,6 +415,7 @@ noteflow-api/
 | `docs/backend-teoria.md` | Arquitectura, REST, SQL, JOINs, HTTP |
 | `docs/seguridad-api.md` | SQL injection, secretos, variables de entorno |
 | `docs/setup-auth-local.md` | Setup local auth: Neon (SQL) vs `.env.local` (JWT) |
+| `docs/setup-firebase.md` | Firebase: consola, paquetes RN, Firestore, Auth, dev build |
 | `docs/auth-api.md` | JWT, register/login, SecureStore |
 | `docs/vercel-deploy.md` | Despliegue Vercel |
 | `docs/modelo-datos.md` | Tipos, `AnyNote`, type guards, `isArchived` |

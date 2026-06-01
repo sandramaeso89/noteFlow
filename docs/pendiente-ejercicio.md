@@ -142,4 +142,31 @@ cd noteflow-api && npm install @neondatabase/serverless zod
 
 ---
 
-*Última revisión: móvil entregable cerrado; backend iniciado; casillas `[ ]` = API, pruebas manuales o sync móvil.*
+## 9. Firebase (nueva fase del curso)
+
+Guía detallada: [`setup-firebase.md`](setup-firebase.md).
+
+```bash
+npx expo install @react-native-firebase/app @react-native-firebase/auth @react-native-firebase/firestore
+```
+
+### Consola Firebase ([console.firebase.google.com](https://console.firebase.google.com))
+
+- [x] Proyecto **noteFlow** creado (plan Spark)
+- [ ] Firestore creado por completo (paso 3 — reglas modo prueba)
+- [ ] Authentication → **Correo electrónico/Contraseña** activado
+- [ ] App Android/iOS registrada (+ Agregar app)
+- [ ] `google-services.json` / `GoogleService-Info.plist` descargados
+
+### Repo
+
+- [x] Paquetes `@react-native-firebase/app`, `auth`, `firestore` en `package.json`
+- [x] Plugins parciales en `app.json` (`app`, `auth`)
+- [ ] Plugin `@react-native-firebase/firestore` en `app.json`
+- [ ] Archivos de config nativos en el proyecto
+- [ ] `expo-dev-client` + Development Build (no Expo Go)
+- [ ] Código de la app conectado a Firebase
+
+---
+
+*Última revisión: móvil y API REST cerrados; Firebase en progreso — ver [`setup-firebase.md`](setup-firebase.md).*
