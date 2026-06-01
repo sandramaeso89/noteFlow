@@ -12,6 +12,9 @@ import {
 } from '../lib/firebaseAuth';
 import { setApiAuthToken } from '../lib/api';
 import { clearAuthToken, clearAuthUser } from '../lib/authStorage';
+import { uploadToAWS } from '../lib/uploadToAWS';
+import { updateUserAvatarUrl } from '../lib/userProfile';
+import { pickImageFromGallery } from '../utils/imagePicker';
 
 export type AuthUser = FirebaseAuthUser;
 
@@ -24,11 +27,13 @@ interface AuthStore {
   syncSession: (user: FirebaseAuthUser | null) => void;
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
+  /** Galería → uploadToAWS (stub) → Firestore avatarUrl. */
+  changeProfilePhoto: () => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   isReady: false,
   isAuthenticated: false,
@@ -65,6 +70,33 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const message =
         error instanceof FirebaseAuthError ? error.message : 'Error al registrarse';
       set({ error: message });
+      return false;
+    }
+  },
+
+  changeProfilePhoto: async () => {
+    const currentUser = get().user;
+    if (!currentUser) {
+      set({ error: 'Debes iniciar sesión para cambiar la foto' });
+      return false;
+    }
+
+    set({ error: null });
+
+    try {
+      const picked = await pickImageFromGallery();
+      if (!picked) return false;
+
+      const avatarUrl = await uploadToAWS(picked.uri);
+      await updateUserAvatarUrl(currentUser.id, avatarUrl);
+
+      set({
+        user: { ...currentUser, avatarUrl },
+        error: null,
+      });
+      return true;
+    } catch {
+      set({ error: 'No se pudo actualizar la foto de perfil' });
       return false;
     }
   },

@@ -167,6 +167,7 @@ npx expo install @react-native-firebase/app @react-native-firebase/auth @react-n
 - [x] Plugin `@react-native-firebase/firestore` en `app.json`
 - [ ] `expo-dev-client` + Development Build (no Expo Go)
 - [x] Pantallas Login y Registro + perfil `users/{uid}` en Firestore
+- [x] `expo-image-picker` + botón **Cambiar foto de perfil** (`UserMenuButton`)
 
 ---
 

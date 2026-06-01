@@ -34,6 +34,13 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "NoteFlow accede a tus fotos para cambiar el avatar y adjuntar imágenes.",
+          "cameraPermission": "NoteFlow usa la cámara para tomar fotos de perfil o adjuntar a notas."
+        }
+      ],
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       "@react-native-firebase/firestore"

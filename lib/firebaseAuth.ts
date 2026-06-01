@@ -8,6 +8,7 @@ export type FirebaseAuthUser = {
   id: string;
   email: string;
   name?: string | null;
+  avatarUrl?: string | null;
 };
 
 export class FirebaseAuthError extends Error {
@@ -60,6 +61,7 @@ async function fetchUserProfile(userId: string): Promise<FirebaseAuthUser | null
     id: userId,
     email: firebaseUser.email ?? (typeof data?.email === 'string' ? data.email : ''),
     name: typeof data?.name === 'string' ? data.name : null,
+    avatarUrl: typeof data?.avatarUrl === 'string' ? data.avatarUrl : null,
   };
 }
 

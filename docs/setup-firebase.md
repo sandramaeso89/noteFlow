@@ -152,6 +152,28 @@ En NoteFlow también se mantienen `expo-router`, `expo-secure-store` y `@react-n
 
 ---
 
+## Galería y foto de perfil (`expo-image-picker`)
+
+```bash
+npx expo install expo-image-picker
+```
+
+| Pieza | Dónde |
+|-------|--------|
+| Permisos + abrir galería | `utils/imagePicker.ts` → `pickImageFromGallery()` |
+| Stub subida AWS (fase posterior) | `lib/uploadToAWS.ts` |
+| Actualizar `avatarUrl` en Firestore | `lib/userProfile.ts` + `store/authStore.ts` → `changeProfilePhoto()` |
+| Botón **Cambiar foto de perfil** | `components/UserMenuButton.tsx` |
+| Textos permiso iOS/Android | `app.json` → plugin `expo-image-picker` |
+
+**Flujo:** menú cuenta → galería (permiso SO) → `uploadToAWS(uri)` (stub) → Firestore `users/{uid}.avatarUrl`.
+
+**Probar:** funciona en **Expo Go** (a diferencia de Firebase nativo). En dispositivo real verás el diálogo de permiso de galería.
+
+**Adjuntar a nota:** pendiente de enunciado; reutilizar `utils/imagePicker.ts`.
+
+---
+
 **Qué hace:** instala las tres librerías con versiones compatibles con **Expo SDK 54** y actualiza `package.json` / `package-lock.json`.
 
 **Qué no hace:**
