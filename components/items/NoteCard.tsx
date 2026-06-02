@@ -8,6 +8,7 @@ import { spacing } from '../../constants/theme';
 import { useNoteFlowColors } from '../../hooks/useNoteFlowColors';
 import type { Note } from '../../types';
 import { formatNoteCardDate } from '../../utils/formatDate';
+import { formatLocationLabel } from '../../utils/formatLocation';
 import { truncate } from '../../utils/text';
 import { CardShell } from './CardShell';
 
@@ -27,6 +28,7 @@ export function NoteCard({
   selected = false,
 }: NoteCardProps) {
   const colors = useNoteFlowColors();
+  const locationLabel = formatLocationLabel(note);
 
   const leftAccessory = selectionMode ? (
     <MaterialCommunityIcons
@@ -69,6 +71,11 @@ export function NoteCard({
       <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={1}>
         {truncate(note.content, 64)}
       </Text>
+      {locationLabel ? (
+        <Text style={[styles.location, { color: colors.textTertiary }]} numberOfLines={1}>
+          {locationLabel}
+        </Text>
+      ) : null}
     </CardShell>
   );
 }
@@ -82,6 +89,11 @@ const styles = StyleSheet.create({
   preview: {
     fontSize: 14,
     lineHeight: 20,
+    marginTop: spacing.xxs,
+  },
+  location: {
+    fontSize: 12,
+    lineHeight: 18,
     marginTop: spacing.xxs,
   },
   meta: {

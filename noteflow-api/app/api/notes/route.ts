@@ -11,6 +11,8 @@ const noteSchema = z.object({
   content: z.string().optional(),
   color: z.string().optional(),
   tags: z.array(z.string().trim().min(1)).optional(),
+  latitude: z.number().finite().optional(),
+  longitude: z.number().finite().optional(),
 });
 
 export const dynamic = 'force-dynamic';
@@ -39,12 +41,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ errors: result.error.issues }, { status: 400 });
     }
 
-    const { title, type, content, color, tags } = result.data;
+    const { title, type, content, color, tags, latitude, longitude } = result.data;
     const [inserted] = await query<{ id: string }>(
-      `INSERT INTO notes (user_id, title, type, content, color)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO notes (user_id, title, type, content, color, latitude, longitude)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-      [auth.userId, title, type, content ?? null, color ?? null]
+      [
+        auth.userId,
+        title,
+        type,
+        content ?? null,
+        color ?? null,
+        latitude ?? null,
+        longitude ?? null,
+      ]
     );
 
     if (tags?.length) {

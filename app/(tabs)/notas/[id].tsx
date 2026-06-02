@@ -11,6 +11,7 @@ import { useNoteFlowColors } from '../../../hooks/useNoteFlowColors';
 import { useNotesStore } from '../../../store/notesStore';
 import { confirmArchive, confirmPermanentDelete } from '../../../utils/confirmActions';
 import { formatNoteCardDate } from '../../../utils/formatDate';
+import { formatLocationLabel } from '../../../utils/formatLocation';
 
 export default function NotaDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,6 +36,7 @@ export default function NotaDetailScreen() {
 
   const current = note;
   const isArchived = !!current.isArchived;
+  const locationLabel = formatLocationLabel(current);
 
   return (
     <>
@@ -72,6 +74,11 @@ export default function NotaDetailScreen() {
         <Text style={[styles.headline, { color: colors.textPrimary }]}>
           {current.title}
         </Text>
+        {locationLabel ? (
+          <Text style={[styles.location, { color: colors.textTertiary }]}>
+            {locationLabel}
+          </Text>
+        ) : null}
         <View
           style={[
             styles.bodyCard,
@@ -103,6 +110,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     lineHeight: 32,
     letterSpacing: -0.5,
+    marginBottom: spacing.sm,
+  },
+  location: {
+    fontSize: 14,
+    lineHeight: 20,
     marginBottom: spacing.lg,
   },
   bodyCard: {

@@ -55,6 +55,12 @@
         {
           "sounds": []
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "NoteFlow usa tu ubicación para etiquetar notas con el lugar donde las creas."
+        }
       ]
     ],
     "extra": {

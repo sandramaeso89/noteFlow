@@ -22,6 +22,7 @@ import {
 } from '../lib/localNotesRepository';
 import type { ChecklistNote, IdeaNote, Note } from '../types';
 import type { ChecklistFormValues, IdeaFormValues, NoteFormValues } from '../schemas/noteSchemas';
+import type { NoteLocation } from '../utils/location';
 import { useAuthStore } from './authStore';
 
 interface NotesStore {
@@ -36,7 +37,7 @@ interface NotesStore {
   fetchNotes: () => Promise<void>;
   /** Recarga desde API sin pantalla de carga global (p. ej. al cambiar de pestaña). */
   refreshNotes: () => Promise<void>;
-  addNote: (input: NoteFormValues) => Promise<boolean>;
+  addNote: (input: NoteFormValues, location?: NoteLocation | null) => Promise<boolean>;
   addChecklist: (input: ChecklistFormValues) => Promise<boolean>;
   addIdea: (input: IdeaFormValues & { tags: string[] }) => Promise<boolean>;
   archiveNote: (id: string) => Promise<void>;
@@ -176,7 +177,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     }
   },
 
-  addNote: async (input) => {
+  addNote: async (input, location) => {
     set({ error: null });
     const userId = getNotesUserId();
     if (!userId) {
@@ -191,9 +192,14 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
           title: input.title,
           type: 'note',
           content: input.content,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
         });
         if ('content' in created) {
-          set((state) => ({ notes: [created, ...state.notes] }));
+          const enriched = location
+            ? { ...created, locationName: location.name }
+            : created;
+          set((state) => ({ notes: [enriched, ...state.notes] }));
           return true;
         }
       } catch (error) {
@@ -211,6 +217,9 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
       createdAt: now,
       updatedAt: now,
       isArchived: false,
+      latitude: location?.latitude ?? null,
+      longitude: location?.longitude ?? null,
+      locationName: location?.name ?? null,
     };
 
     set((state) => {

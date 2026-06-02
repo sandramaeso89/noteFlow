@@ -2,7 +2,14 @@
 
 ## Arranque cada día
 
-> **No uses Expo Go.** NoteFlow usa módulos nativos (Firebase, notificaciones, galería). Abre el icono **noteFlow** en el emulador o móvil, no el de Expo Go. Si en Metro pulsas `s`, vuelves a Go y fallará.
+> **No uses Expo Go.** NoteFlow usa **módulos nativos** (Firebase, notificaciones, galería, GPS). Abre el icono **noteFlow** en el emulador o móvil, no el de Expo Go. Si en Metro pulsas `s`, vuelves a Go y fallará.
+
+| Paso | Qué haces |
+|------|-----------|
+| **1** | Entrar en la carpeta del proyecto |
+| **2** | Arrancar Metro (`--dev-client`) |
+| **3** | Abrir la app (tecla `a`/`i` o icono **noteFlow**) |
+| **4** | Login Firebase y usar la app |
 
 **Paso 1.** Abre una terminal y entra en el proyecto:
 
@@ -23,11 +30,22 @@ npx expo start --dev-client -c
 
 **Paso 4.** Inicia sesión con Firebase si te lo pide y usa la app (**Notas · Checklists · Ideas · Archivo**).
 
+**Funciones nativas en la app (curso):**
+
+| Función | Dónde probarla |
+|---------|----------------|
+| Recordatorio local | Nueva nota → interruptor **Recordatorio local** |
+| Ubicación GPS | Nueva nota → **Usar mi ubicación** |
+| Foto de perfil | Menú cuenta (cabecera) |
+| Archivar / listas | Pestañas + detalle |
+
 ---
 
 ## Primera vez en este Mac (solo una vez)
 
-> Tras instalar dependencias nuevas con código nativo (`expo-notifications`, Firebase, etc.) o un emulador nuevo, vuelve a **compilar** (`npx expo run:android` / `run:ios`, más abajo) antes del arranque diario.
+> Tras instalar dependencias con **código nativo** (`expo-location`, `expo-notifications`, Firebase, etc.) o un emulador nuevo, vuelve a **compilar** antes del arranque diario:
+>
+> `npx expo run:android` o `npx expo run:ios` (sección 3 más abajo).
 
 ### Primera vez (setup en tu Mac)
 
@@ -81,8 +99,20 @@ npx expo run:android --no-build-cache
 | **Cada día** | Pasos 1–4 de [Arranque cada día](#arranque-cada-día) |
 | **Primera vez / emulador nuevo / plugin nativo nuevo** | `npx expo run:android` o `npx expo run:ios` (ver abajo) |
 | **Build Android falla (caché / `* 2.java`)** | Bloque `find … -delete` + `rm -rf` de arriba y `npx expo run:android --no-build-cache` |
+| **GPS: «Current location is unavailable»** | Emulador: ⋮ → **Location** → marcar punto. Ver [`docs/geolocalizacion.md`](docs/geolocalizacion.md) |
 
-Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md) · Notificaciones: [`docs/notificaciones-locales.md`](docs/notificaciones-locales.md).
+**Migración Neon (ubicación GPS en API)** — ejecuta una vez en el [SQL Editor de Neon](https://console.neon.tech):
+
+```sql
+-- Archivo completo: sql/migrations/002_notes_location.sql
+ALTER TABLE notes
+  ADD COLUMN IF NOT EXISTS latitude NUMERIC,
+  ADD COLUMN IF NOT EXISTS longitude NUMERIC;
+```
+
+Sin esto, las notas **con ubicación** fallan contra la API en Vercel; el modo local en el móvil sigue funcionando.
+
+Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md) · Notificaciones: [`docs/notificaciones-locales.md`](docs/notificaciones-locales.md) · GPS: [`docs/geolocalizacion.md`](docs/geolocalizacion.md).
 
 ---
 
@@ -145,6 +175,7 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 | Firebase (Auth + perfil `users` en Firestore) | Hecho | `lib/firebaseAuth.ts`, `lib/userProfile.ts` |
 | Notas en Firestore | Pendiente | Aun no implementado (flujo actual: API REST + fallback local) |
 | Notificaciones locales + permisos (Ajustes) | Hecho | `utils/notifications.ts`, `docs/notificaciones-locales.md` |
+| Geolocalización (GPS + lat/lon en API) | Hecho | `utils/location.ts`, `docs/geolocalizacion.md` |
 
 **Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
@@ -154,7 +185,8 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 - **Auth principal:** Firebase email/contraseña.
 - **Perfil:** colección `users` en Firestore (`name`, `email`, `createdAt`, `avatarUrl`).
 - **Notas:** API REST (`noteflow-api` + Neon) cuando hay JWT; si no hay JWT o falla API, fallback local por usuario con AsyncStorage.
-- **Sync Firebase -> API:** tras login/register se intenta obtener sesión JWT para usar endpoints `/notes`.
+- **Sync Firebase → API:** tras login/register se intenta obtener sesión JWT para usar endpoints `/notes`.
+- **Ubicación:** opcional al crear nota; se guarda `latitude` / `longitude` en Neon (y nombre de calle en el dispositivo para mostrar).
 
 ---
 
@@ -169,7 +201,9 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 - **Zustand** — estado global con estrategia híbrida: API REST y fallback local
 - **expo-secure-store** — token JWT cifrado (no AsyncStorage)
 - **Zod** — validación en formularios
-- **expo-haptics**, **react-native-reanimated**, **expo-notifications** (recordatorios locales)
+- **expo-haptics**, **react-native-reanimated** (animaciones en tarjetas y layout)
+- **expo-notifications** — recordatorios locales al crear nota
+- **expo-location** — GPS y geocodificación inversa (`latitude` / `longitude` en API)
 
 **Expo Go** vs **Development Build:** [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
 
@@ -192,6 +226,9 @@ lib/authApi.ts         # Register / login
 lib/authStorage.ts     # Token en SecureStore
 lib/localNotesRepository.ts # Persistencia local por usuario (AsyncStorage)
 lib/syncApiAuth.ts     # Bridge Firebase Auth -> JWT API
+utils/location.ts      # GPS + dirección (expo-location)
+utils/notifications.ts # Recordatorios locales
+utils/permissions.ts   # Permisos + Abrir Ajustes
 store/authStore.ts     # Sesión
 store/notesStore.ts    # Zustand async (API + fallback local)
 app/login.tsx          # Pantalla de acceso
@@ -216,6 +253,7 @@ API **REST** en **Next.js 16** con persistencia en **Neon PostgreSQL**. La app m
 | [`docs/vercel-deploy.md`](docs/vercel-deploy.md) | Despliegue en Vercel paso a paso |
 | [`sql/schema.sql`](sql/schema.sql) | DDL: `users`, `notes`, `checklist_items`, `note_tags` |
 | [`sql/migrations/001_users_auth.sql`](sql/migrations/001_users_auth.sql) | Migración si ya tenías tablas sin auth |
+| [`sql/migrations/002_notes_location.sql`](sql/migrations/002_notes_location.sql) | Columnas `latitude` / `longitude` en `notes` |
 
 ### Descripción
 
@@ -267,7 +305,7 @@ Guía detallada con capturas de errores habituales: **[`docs/setup-auth-local.md
 
    Esperado: **201** con `{ "token", "user" }`. Si **500**, revisa pasos 2–3 y reinicia la API.
 
-6. **App móvil:** regístrate en la pantalla de login (`npx expo start -c`). Ver sección [App móvil](#app-móvil--arranque-local).
+6. **App móvil:** development build + `npx expo start --dev-client -c`. Ver [Arranque cada día](#arranque-cada-día).
 
 7. **(Opcional) Datos demo** — tras login, con token:
 
@@ -471,6 +509,7 @@ noteflow-api/
 | `docs/gestion-estado.md` | useState / Context / Zustand en NoteFlow |
 | `docs/persistencia.md` | Persistencia real actual: fallback local por usuario y carga inicial |
 | `docs/notificaciones-locales.md` | Permisos nativos, recordatorios locales, rebuild dev client |
+| `docs/geolocalizacion.md` | expo-location, migración SQL, mostrar ubicación |
 | `docs/pendiente-ejercicio.md` | Checklist del curso |
 | `docs/react-native-teoria.md` | Metro, RN vs nativo, Paper, FlashList |
 | `docs/react-native-fundamentals.md` | Hilos JS/UI y rendimiento |

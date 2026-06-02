@@ -12,6 +12,11 @@ export interface BaseNote {
   updatedAt: Date;
   /** Si true, no aparece en pestañas activas; solo en Archivadas. */
   isArchived?: boolean;
+  /** Coordenadas GPS opcionales (API Neon o fallback local). */
+  latitude?: number | null;
+  longitude?: number | null;
+  /** Etiqueta de geocodificación inversa (solo en cliente al capturar). */
+  locationName?: string | null;
 }
 
 /** Nota de texto libre (pestaña Notas / reuniones). */

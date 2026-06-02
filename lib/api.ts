@@ -94,6 +94,8 @@ export type CreateNoteInput = {
   content?: string;
   color?: string;
   tags?: string[];
+  latitude?: number;
+  longitude?: number;
 };
 
 /** Campos actualizables vía PATCH /notes/:id */
@@ -119,11 +121,19 @@ export type ApiNoteRow = {
   type: 'note' | 'checklist' | 'idea';
   color: string | null;
   is_archived: boolean;
+  latitude: number | string | null;
+  longitude: number | string | null;
   created_at: string;
   updated_at: string;
   items: ApiChecklistItemRow[] | null;
   tags: string[] | null;
 };
+
+function parseCoordinate(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
 
 function parseDate(value: string): Date {
   return new Date(value);
@@ -145,6 +155,8 @@ export function mapApiRowToAnyNote(row: ApiNoteRow): AnyNote {
     createdAt: parseDate(row.created_at),
     updatedAt: parseDate(row.updated_at),
     isArchived: row.is_archived ?? false,
+    latitude: parseCoordinate(row.latitude),
+    longitude: parseCoordinate(row.longitude),
   };
 
   const noteType = row.type?.trim().toLowerCase();

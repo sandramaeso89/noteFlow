@@ -18,6 +18,7 @@ import {
 import { Button, SegmentedButtons, Switch, Text, TextInput } from 'react-native-paper';
 
 import { formatNoteCardDate } from '../utils/formatDate';
+import { getCurrentAddress, type NoteLocation } from '../utils/location';
 import { scheduleReminder } from '../utils/notifications';
 
 import { FieldError } from '../components/forms/FieldError';
@@ -70,10 +71,30 @@ export default function NuevaNoteScreen() {
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderDate, setReminderDate] = useState(defaultReminderDate);
   const [showAndroidDatePicker, setShowAndroidDatePicker] = useState(false);
+  const [noteLocation, setNoteLocation] = useState<NoteLocation | null>(null);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   function handleClose() {
     if (isSaving) return;
     router.back();
+  }
+
+  async function handleAttachLocation() {
+    if (isSaving || isFetchingLocation) return;
+    setIsFetchingLocation(true);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.location;
+      return next;
+    });
+    try {
+      const location = await getCurrentAddress();
+      if (location) {
+        setNoteLocation(location);
+      }
+    } finally {
+      setIsFetchingLocation(false);
+    }
   }
 
   // Valida según el tipo activo, crea el ítem vía API y cierra el modal.
@@ -94,7 +115,7 @@ export default function NuevaNoteScreen() {
       }
       setIsSaving(true);
       try {
-        const ok = await addNote(result.data);
+        const ok = await addNote(result.data, noteLocation);
         if (!ok) return;
 
         if (reminderEnabled) {
@@ -228,6 +249,38 @@ export default function NuevaNoteScreen() {
                 textColor={colors.textPrimary}
               />
               <FieldError message={errors.content} />
+
+              <View style={styles.locationBlock}>
+                <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                  Ubicación (opcional)
+                </Text>
+                <Button
+                  mode="outlined"
+                  onPress={() => void handleAttachLocation()}
+                  loading={isFetchingLocation}
+                  disabled={isSaving || isFetchingLocation}
+                  textColor={colors.textPrimary}
+                >
+                  Usar mi ubicación
+                </Button>
+                {noteLocation ? (
+                  <Text style={[styles.locationPreview, { color: colors.textSecondary }]}>
+                    {noteLocation.name}
+                  </Text>
+                ) : null}
+                {noteLocation ? (
+                  <Button
+                    mode="text"
+                    compact
+                    onPress={() => setNoteLocation(null)}
+                    disabled={isSaving}
+                    textColor={colors.textTertiary}
+                  >
+                    Quitar ubicación
+                  </Button>
+                ) : null}
+                <FieldError message={errors.location} />
+              </View>
 
               <View style={styles.reminderBlock}>
                 <View style={styles.reminderHeader}>
@@ -416,6 +469,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.button,
+  },
+  locationBlock: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+    alignItems: 'flex-start',
+  },
+  locationPreview: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   reminderBlock: {
     marginTop: spacing.md,

@@ -21,6 +21,8 @@ const patchSchema = z
     content: z.string().optional(),
     color: z.string().optional(),
     is_archived: z.boolean().optional(),
+    latitude: z.number().finite().nullable().optional(),
+    longitude: z.number().finite().nullable().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Debes enviar al menos un campo para actualizar',
@@ -94,6 +96,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (parsedBody.data.is_archived !== undefined) {
       values.push(parsedBody.data.is_archived);
       setClauses.push(`is_archived = $${values.length + 2}`);
+    }
+    if (parsedBody.data.latitude !== undefined) {
+      values.push(parsedBody.data.latitude);
+      setClauses.push(`latitude = $${values.length + 2}`);
+    }
+    if (parsedBody.data.longitude !== undefined) {
+      values.push(parsedBody.data.longitude);
+      setClauses.push(`longitude = $${values.length + 2}`);
     }
 
     const sql = `
