@@ -21,6 +21,22 @@ export function setApiAuthToken(token: string | null): void {
   authToken = token;
 }
 
+export function getApiAuthToken(): string | null {
+  return authToken;
+}
+
+/** Recupera el JWT de SecureStore si aún no está en memoria. */
+export async function ensureApiAuthToken(): Promise<boolean> {
+  if (authToken) return true;
+
+  const { getAuthToken } = await import('./authStorage');
+  const stored = await getAuthToken();
+  if (!stored) return false;
+
+  authToken = stored;
+  return true;
+}
+
 export class ApiAuthError extends Error {
   constructor(message = 'Sesión expirada') {
     super(message);
@@ -30,6 +46,8 @@ export class ApiAuthError extends Error {
 
 /** fetch con tope de tiempo y cabecera Authorization si hay token. */
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  await ensureApiAuthToken();
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -201,7 +219,18 @@ export function splitAnyNotes(all: AnyNote[]): {
 
 async function parseJson<T>(res: Response, fallbackMessage: string): Promise<T> {
   if (!res.ok) {
-    throw new Error(fallbackMessage);
+    let detail = fallbackMessage;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (typeof body.error === 'string') detail = body.error;
+    } catch {
+      // respuesta no JSON
+    }
+    if (res.status === 401) {
+      authToken = null;
+      throw new ApiAuthError();
+    }
+    throw new Error(detail);
   }
   return res.json() as Promise<T>;
 }

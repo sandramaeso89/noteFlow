@@ -1,56 +1,78 @@
 # NoteFlow
 
-App de **productividad** pensada para quienes viven de **reuniones**: capturar en segundos el resumen de cada cita, las **acciones** pendientes y **referencias** útiles, revisar lo pendiente con calma y archivar lo cerrado sin perder el contexto.
+## Arranque rápido — Development Build (Firebase)
 
-La definición de producto, usuario y alcance está en **[`docs/idea.md`](docs/idea.md)**.
+> **Importante:** NoteFlow usa **Firebase nativo** (`@react-native-firebase`). **No uses Expo Go** (si en Metro pulsas `s`, vuelves a Go y fallará). Necesitas un **development build** instalado en el emulador o dispositivo.
 
----
+### Primera vez (setup en tu Mac)
 
-## Arranque rápido (app móvil)
-
-Sigue estos pasos cada vez que quieras abrir la app en tu Mac / emulador.
-
-### Requisitos previos (solo la primera vez)
-
-- **Node.js** (LTS)
-- **Expo Go** en dispositivo o simulador iOS/Android
-- Cuenta creada en la app (pantalla de login)
-
-### Pasos
-
-**1. Instalar dependencias** (solo la primera vez o tras `git pull`):
+**1. Dependencias**
 
 ```bash
 cd noteFlow
 npm install
 ```
 
-**2. Configurar la URL de la API** — archivo **`.env`** en la raíz del repo (no en `noteflow-api/`):
+**2. Variables de entorno** — archivo **`.env`** en la raíz (no commitear):
 
 ```bash
 cp .env.example .env
 ```
 
-Edita `.env`:
-
 | Modo | `EXPO_PUBLIC_API_URL` |
 |------|------------------------|
 | **Producción (Vercel)** — recomendado | `https://note-flow-topaz.vercel.app/api` |
-| iOS Simulator (API local) | `http://localhost:3000/api` |
 | Android Emulator (API local) | `http://10.0.2.2:3000/api` |
+| iOS Simulator (API local) | `http://localhost:3000/api` |
 | Dispositivo físico (API local, misma WiFi) | `http://<IP-de-tu-Mac>:3000/api` |
 
-**3. Arrancar Expo:**
+**3. Compilar e instalar la app nativa** (solo la primera vez, tras borrar el emulador o cambiar plugins nativos; tarda ~10–15 min la primera vez):
 
 ```bash
-npx expo start -c
+# Android (emulador encendido o dispositivo por USB)
+npx expo run:android
+
+# iOS (Mac + Xcode)
+npx expo run:ios
 ```
 
-Escanea el QR con **Expo Go** o pulsa `i` (iOS) / `a` (Android) en la terminal.
+Si el build de Android falla con un error tipo `values-xlarge-v4 2.json` (caché Gradle corrupta):
 
-**4. Iniciar sesión** en la pantalla de login (regístrate si es la primera vez).
+```bash
+rm -rf android/app/build android/build android/app/.cxx
+npx expo run:android --no-build-cache
+```
 
-**5. Usar la app:** pestañas **Notas · Checklists · Ideas · Archivo**. Icono de **cuenta** (cabecera) → email y **Cerrar sesión**.
+### Cada día (desarrollo)
+
+**1. Metro con dev client**
+
+```bash
+npx expo start --dev-client -c
+```
+
+**2. Abrir la app**
+
+- Pulsa **`a`** (Android) o **`i`** (iOS) en la terminal, **o**
+- Abre el icono **noteFlow** en el emulador/dispositivo (no el de Expo Go).
+
+**3. Sesión:** login o registro (Firebase). Pestañas **Notas · Checklists · Ideas · Archivo**. Menú de cuenta (cabecera) → foto de perfil y **Cerrar sesión**.
+
+| Paso | Comando | Cuándo |
+|------|---------|--------|
+| Instalar build nativo | `npx expo run:android` / `run:ios` | Primera vez o emulador nuevo |
+| Arrancar bundler | `npx expo start --dev-client -c` | Siempre |
+| Abrir app | `a` / `i` o icono **noteFlow** | Con el build ya instalado |
+
+Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md).
+
+---
+
+App de **productividad** pensada para quienes viven de **reuniones**: capturar en segundos el resumen de cada cita, las **acciones** pendientes y **referencias** útiles, revisar lo pendiente con calma y archivar lo cerrado sin perder el contexto.
+
+La definición de producto, usuario y alcance está en **[`docs/idea.md`](docs/idea.md)**.
+
+---
 
 ### API local (opcional)
 
@@ -64,7 +86,7 @@ npm install
 npm run dev
 
 # Terminal 2 — app (con .env apuntando a localhost / 10.0.2.2)
-npx expo start -c
+npx expo start --dev-client -c
 ```
 
 Guía completa backend y Neon: [`docs/setup-auth-local.md`](docs/setup-auth-local.md).

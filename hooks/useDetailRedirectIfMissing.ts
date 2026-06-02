@@ -11,11 +11,17 @@ type ListPath = '/notas' | '/checklists' | '/ideas';
 
 export function useDetailRedirectIfMissing(found: boolean, listPath: ListPath) {
   const refreshNotes = useNotesStore((s) => s.refreshNotes);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(found);
 
   useEffect(() => {
+    // Si la nota ya está en memoria (p. ej. local), no recargar API: evita 401 → logout.
+    if (found) {
+      setReady(true);
+      return;
+    }
+
     void refreshNotes().finally(() => setReady(true));
-  }, [refreshNotes]);
+  }, [refreshNotes, found]);
 
   useEffect(() => {
     if (ready && !found) {

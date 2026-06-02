@@ -14,7 +14,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StoreHydrationGate } from '../components/StoreHydrationGate';
 import { getNoteFlowPaperTheme, spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
-import { setApiAuthToken } from '../lib/api';
 import { resolveSessionUser } from '../lib/firebaseAuth';
 import { useAuthStore } from '../store/authStore';
 
@@ -54,8 +53,6 @@ function ProtectedRoutes({ children }: { children: ReactNode }) {
 
   // Comprueba sesión con Firebase Auth en cada cambio (login, logout, arranque en frío).
   useEffect(() => {
-    setApiAuthToken(null);
-
     const unsubscribe = auth().onAuthStateChanged((firebaseUser) => {
       void resolveSessionUser(firebaseUser).then(syncSession);
     });

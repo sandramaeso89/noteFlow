@@ -11,7 +11,9 @@ import {
   type FirebaseAuthUser,
 } from '../lib/firebaseAuth';
 import { setApiAuthToken } from '../lib/api';
-import { clearAuthToken, clearAuthUser } from '../lib/authStorage';
+import { clearAuthToken, clearAuthUser, getAuthToken } from '../lib/authStorage';
+import { syncApiAuthForFirebaseUser } from '../lib/syncApiAuth';
+import { useNotesStore } from './notesStore';
 import { uploadToAWS } from '../lib/uploadToAWS';
 import { updateUserAvatarUrl } from '../lib/userProfile';
 import { pickImageFromGallery } from '../utils/imagePicker';
@@ -40,6 +42,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   error: null,
 
   syncSession: (user) => {
+    void (async () => {
+      if (user) {
+        const token = await getAuthToken();
+        setApiAuthToken(token);
+      } else {
+        setApiAuthToken(null);
+      }
+    })();
+
     set({
       user,
       isAuthenticated: !!user,
@@ -52,6 +63,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ error: null });
     try {
       await loginWithEmail(email, password);
+      const apiOk = await syncApiAuthForFirebaseUser(email, password);
+      if (apiOk) {
+        await useNotesStore.getState().fetchNotes();
+      }
       return true;
     } catch (error) {
       const message =
@@ -65,6 +80,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ error: null });
     try {
       await registerWithProfile(email, password, name);
+      const apiOk = await syncApiAuthForFirebaseUser(email, password);
+      if (apiOk) {
+        await useNotesStore.getState().fetchNotes();
+      }
       return true;
     } catch (error) {
       const message =

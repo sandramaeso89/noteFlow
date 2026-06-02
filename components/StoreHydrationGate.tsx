@@ -6,7 +6,6 @@ import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
-import { handleApiUnauthorized } from '../components/AuthGate';
 import { spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
 import { setApiAuthToken } from '../lib/api';
@@ -22,7 +21,7 @@ export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
   const colors = useNoteFlowColors();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useNotesStore((s) => s.isLoading);
-  const error = useNotesStore((s) => s.error);
+  const loadError = useNotesStore((s) => s.loadError);
   const fetchNotes = useNotesStore((s) => s.fetchNotes);
 
   useEffect(() => {
@@ -32,20 +31,10 @@ export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
       const token = await getAuthToken();
       if (token) {
         setApiAuthToken(token);
-        await fetchNotes();
-        return;
       }
-
-      // Firebase Auth: perfil en Firestore; notas REST en fase posterior del curso.
-      useNotesStore.setState({ isLoading: false, error: null });
+      await fetchNotes();
     })();
   }, [fetchNotes, isAuthenticated]);
-
-  useEffect(() => {
-    if (error === 'Sesión expirada') {
-      void handleApiUnauthorized();
-    }
-  }, [error]);
 
   if (!isAuthenticated) {
     return children;
@@ -62,10 +51,10 @@ export function StoreHydrationGate({ children }: StoreHydrationGateProps) {
     );
   }
 
-  if (error) {
+  if (loadError) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
-        <Text style={[styles.error, { color: colors.textSecondary }]}>{error}</Text>
+        <Text style={[styles.error, { color: colors.textSecondary }]}>{loadError}</Text>
         <Button mode="contained" onPress={() => void fetchNotes()} buttonColor={colors.fill}>
           Reintentar
         </Button>

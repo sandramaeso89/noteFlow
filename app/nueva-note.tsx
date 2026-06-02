@@ -42,6 +42,8 @@ export default function NuevaNoteScreen() {
   const addNote = useNotesStore((s) => s.addNote);
   const addChecklist = useNotesStore((s) => s.addChecklist);
   const addIdea = useNotesStore((s) => s.addIdea);
+  const saveError = useNotesStore((s) => s.error);
+  const clearNotesError = useNotesStore((s) => s.clearError);
 
   const [contentType, setContentType] = useState<ContentType>(() =>
     parseInitialType(params.type)
@@ -63,6 +65,7 @@ export default function NuevaNoteScreen() {
   async function handleSave() {
     if (isSaving) return;
     setErrors({});
+    clearNotesError();
 
     if (contentType === 'note') {
       const result = noteFormSchema.safeParse({ title, content });
@@ -277,6 +280,7 @@ export default function NuevaNoteScreen() {
           )}
 
           <View style={styles.actions}>
+            {saveError ? <FieldError message={saveError} /> : null}
             <Button
               mode="outlined"
               onPress={handleClose}
@@ -333,7 +337,9 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'flex-end',
+    alignItems: 'center',
     gap: spacing.sm,
     marginTop: spacing.xl,
   },
