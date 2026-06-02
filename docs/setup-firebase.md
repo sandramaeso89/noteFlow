@@ -31,7 +31,7 @@ Firebase es una **fase nueva del curso**. Instalar las librerías **no sustituye
 
 ---
 
-## Progreso (sesión junio 2026)
+## Progreso real (junio 2026)
 
 ### Hecho en la consola Firebase
 
@@ -50,7 +50,8 @@ Firebase es una **fase nueva del curso**. Instalar las librerías **no sustituye
 | Plugin `@react-native-firebase/app` en `app.json` | Hecho | `app.json` → `plugins` |
 | Rutas a archivos de config nativos | Hecho | `android.googleServicesFile`, `ios.googleServicesFile` en `app.json` |
 | Identificadores Android / iOS | Hecho | `noteFlow.ANDROID` / `noteFlowIOS` — alineados con Firebase |
-| Plugins `auth` + `firestore` | Hecho | `app.json` → `plugins` |
+| Plugin `auth` | Hecho | `app.json` → `plugins` |
+| Plugin `firestore` en `app.json` | Pendiente/No aplicado | El paquete está instalado, pero no aparece en `plugins` |
 | Código Auth + perfil Firestore | Hecho | `lib/firebaseAuth.ts`, `app/login.tsx`, `app/register.tsx` |
 | `google-services.json` / `GoogleService-Info.plist` en la raíz | Hecho | Raíz del repo, alineados con `app.json` |
 | **Development Build (EAS)** | Pendiente | `@react-native-firebase` **no funciona en Expo Go** — ver abajo |
@@ -148,7 +149,11 @@ En NoteFlow también se mantienen `expo-router`, `expo-secure-store` y `@react-n
 | Estado global sesión | `store/authStore.ts` + `auth().onAuthStateChanged` en `app/_layout.tsx` |
 | Colección Firestore | `users` — campos: `name`, `email`, `createdAt`, `avatarUrl` |
 
-**Notas:** la API REST (Neon) sigue en el repo; con sesión Firebase las listas pueden ir vacías hasta migrar notas a Firestore. Probar requiere **Development Build**.
+**Notas (estado actual):**
+- La API REST (Neon) sigue siendo la fuente principal de notas cuando hay JWT.
+- Si no hay JWT o falla la API, la app usa fallback local en AsyncStorage por usuario.
+- **Las notas todavía no se escriben en Firestore**; Firestore se usa para perfil `users/{uid}`.
+- Probar Firebase nativo requiere **Development Build**.
 
 ---
 
@@ -256,7 +261,7 @@ Más contexto API: [`seguridad-api.md`](seguridad-api.md).
 3. Mac: colocar `google-services.json` y `GoogleService-Info.plist` en la **raíz** del repo.
 4. Instalar `expo-dev-client` y generar **Development Build** con EAS (no Expo Go).
 5. Repo: añadir plugin `@react-native-firebase/firestore` en `app.json` si el tutor lo indica.
-6. Código: inicializar Firebase y conectar login/datos según el enunciado.
+6. Datos: definir migración de notas (REST/Neon -> Firestore o estrategia mixta con sync explícito).
 
 ---
 
@@ -277,4 +282,4 @@ Más contexto API: [`seguridad-api.md`](seguridad-api.md).
 
 ---
 
-*Última revisión: junio 2026 — setup Firebase del tutor completo; dev build y código en app pendientes.*
+*Última revisión: junio 2026 — Auth Firebase + perfil Firestore implementados; notas en Firestore pendientes.*

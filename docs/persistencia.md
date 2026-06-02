@@ -1,79 +1,62 @@
-# Persistencia local con AsyncStorage
+# Persistencia actual de datos
 
-NoteFlow guarda notas, checklists e ideas en el dispositivo con [**AsyncStorage**](https://react-native-async-storage.github.io/async-storage/) y el middleware **`persist`** de Zustand (`store/notesStore.ts`).
+NoteFlow usa persistencia **hibrida**:
 
-## Limitaciones (importante)
+- **API REST + Neon** como fuente principal cuando hay JWT valido.
+- **AsyncStorage por usuario** como fallback local si no hay JWT o falla la API.
+
+La logica esta en `store/notesStore.ts`, con soporte de `lib/api.ts`, `lib/authStorage.ts` y `lib/localNotesRepository.ts`.
+
+## Limitaciones y trade-offs (importante)
 
 | Aspecto | Implicación |
-|---------|-------------|
-| **Sin cifrado** | Cualquiera con acceso al almacén del dispositivo podría leer el JSON. No uses NoteFlow para secretos. |
+| --------- | ------------- |
+| **Sin cifrado en fallback local** | Cualquiera con acceso al almacen del dispositivo podria leer el JSON local. No uses NoteFlow para secretos. |
 | **Límite de tamaño** | AsyncStorage no está pensado para megabytes de texto; listas muy grandes pueden fallar o ir lentas. |
-| **Solo en este dispositivo** | No hay sincronización entre móvil y tablet; borrar la app suele borrar los datos. |
+| **Solo en este dispositivo (modo local)** | Sin sync a nube en fallback local; borrar app suele borrar datos locales. |
+| **Riesgo de divergencia** | Si alternas entre API y local, puede haber diferencias hasta definir estrategia de migracion/sync. |
 
 Para copia de seguridad o cuenta de usuario haría falta otro enfoque (export JSON, backend, etc.).
 
-## Cómo está integrado
+## Como esta integrado hoy
 
-```ts
-export const useNotesStore = create<NotesStore>()(
-  persist(
-    (set) => ({ /* estado + acciones */ }),
-    {
-      name: 'noteflow-storage',
-      storage: createJSONStorage(() => AsyncStorage, {
-        reviver: storeDateReviver, // fechas ISO → Date
-      }),
-      partialize: (state) => ({
-        notes: state.notes,
-        checklists: state.checklists,
-        ideas: state.ideas,
-      }),
-    }
-  )
-);
-```
+1. `notesStore.fetchNotes()` intenta cargar desde API (`ensureApiAuthToken` + `fetchNoteBuckets`).
+2. Si no hay token o hay `ApiAuthError`, carga buckets locales con `loadLocalBuckets(userId)`.
+3. En operaciones CRUD, intenta API primero; si falla auth/API, guarda en local con `saveLocalBuckets(userId, buckets)`.
+4. IDs locales usan `createLocalId(...)` y se distinguen de UUID de Neon para evitar llamadas invalidas al backend.
 
-- **Clave en disco:** `noteflow-storage` (JSON serializado).
-- **`partialize`:** solo se guardan los tres arrays; las funciones del store y `_hasHydrated` no se persisten.
-- **Fechas:** al guardar, `Date` pasa a string ISO; al leer, `storeDateReviver` en `utils/storeSerialization.ts` las convierte otra vez a `Date`.
+**Clave local por usuario:** `noteflow-local-${userId}`.
 
-## Rehidratación: qué ocurre al abrir la app
+## Carga inicial al abrir la app
 
-1. **Arranque:** Zustand crea el store con el estado inicial en memoria (incluye datos **seed** si es la primera vez).
-2. **Lectura asíncrona:** `persist` lee `noteflow-storage` en AsyncStorage.
-3. **Parseo:** el JSON se fusiona con el store; las fechas se reparan con el `reviver`.
-4. **Fin:** se ejecuta `onRehydrateStorage` y `persist.onFinishHydration`; el flag `_hasHydrated` pasa a `true`.
+1. `StoreHydrationGate` detecta sesion y llama `fetchNotes()`.
+2. Si hay JWT valido, carga de API.
+3. Si no hay JWT/API, carga local por usuario.
+4. Si API falla sin fallback disponible, muestra error bloqueante con boton **Reintentar**.
 
-Hasta el paso 4, la UI **no debería** asumir que los datos en pantalla son los definitivos: podría mostrarse un instante el seed y luego sustituirse por lo guardado.
+## Indicador de carga y errores
 
-## Indicador de carga mientras rehidrata
+En NoteFlow, `components/StoreHydrationGate.tsx` envuelve la navegacion en `app/_layout.tsx`:
 
-En NoteFlow, `components/StoreHydrationGate.tsx` envuelve la navegación en `app/_layout.tsx`:
+- Si `isLoading === true`: pantalla con `ActivityIndicator` y texto "Cargando tus notas...".
+- Si `loadError` existe: pantalla de error con accion de reintento.
+- Si todo va bien: se renderiza la app normal (tabs, listas, modal).
 
-- Si `_hasHydrated === false`: pantalla con `ActivityIndicator` y texto «Cargando tus notas…».
-- Cuando termina la rehidratación: se renderiza la app normal (tabs, listas, modal).
-
-También se comprueba `useNotesStore.persist.hasHydrated()` por si la lectura fue síncrona o muy rápida.
-
-### Alternativas válidas
-
-- **Splash nativo** de Expo hasta `onFinishHydration`.
-- **Skeleton** en las listas en lugar de pantalla bloqueante.
-- **Optimistic UI:** mostrar seed y actualizar al terminar (más riesgo de parpadeo).
-
-La pantalla bloqueante es la opción más simple y evita que el usuario cree o borre datos sobre un estado aún no cargado.
+La pantalla bloqueante evita operar sobre estado incompleto al arrancar.
 
 ## Cómo verificar (enunciado del curso)
 
-1. Crea una nota nueva desde **+** y guarda.
-2. Cierra la app **por completo** (quitarla del reciente / forzar cierre).
-3. Vuelve a abrir NoteFlow.
-4. La nota debe seguir en la lista (y en **Archivo** si la archivaste).
+1. Inicia sesion con Firebase.
+2. Crea una nota nueva desde **+** y guarda.
+3. Simula falta de API (URL invalida o backend caido) y vuelve a abrir la app.
+4. Verifica que la app sigue mostrando datos locales del usuario.
+5. Restablece API y verifica que vuelve a cargar desde backend cuando hay JWT valido.
 
-Si no aparece: revisa que `persist` esté activo, que `partialize` incluya los tres arrays y que no haya error en consola al parsear JSON. Tras cambios en dependencias nativas (Reanimated), prueba `npx expo start -c`.
+Si no aparece: revisa token en SecureStore, `ensureApiAuthToken`, y que exista clave `noteflow-local-${userId}` en AsyncStorage.
 
 ## Enlaces
 
-- Store: [`store/notesStore.ts`](../store/notesStore.ts)
-- Gate de hidratación: [`components/StoreHydrationGate.tsx`](../components/StoreHydrationGate.tsx)
-- Gestión de estado: [`gestion-estado.md`](gestion-estado.md)
+- Store de notas: [`store/notesStore.ts`](../store/notesStore.ts)
+- Repositorio local: [`lib/localNotesRepository.ts`](../lib/localNotesRepository.ts)
+- Cliente API: [`lib/api.ts`](../lib/api.ts)
+- Gate de carga: [`components/StoreHydrationGate.tsx`](../components/StoreHydrationGate.tsx)

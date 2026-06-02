@@ -124,13 +124,18 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 | Selección múltiva y archivar en bloque | Hecho | `app/(tabs)/*/index.tsx` |
 | API desplegada en Vercel + Neon | Hecho | https://note-flow-topaz.vercel.app/api |
 | Documentación backend, auth y Vercel | Hecho | `docs/setup-auth-local.md`, `docs/auth-api.md`, `docs/vercel-deploy.md` |
-| Firebase (Auth + Firestore) — fase curso | En progreso | [`docs/setup-firebase.md`](docs/setup-firebase.md) |
+| Firebase (Auth + perfil `users` en Firestore) | Hecho | `lib/firebaseAuth.ts`, `lib/userProfile.ts` |
+| Notas en Firestore | Pendiente | Aun no implementado (flujo actual: API REST + fallback local) |
 
 **Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
 **Pendiente solo manual (tutor):** auditoría FPS y tema claro/oscuro en simulador — [`docs/pendiente-ejercicio.md`](docs/pendiente-ejercicio.md).
 
-**Nueva fase (Firebase):** proyecto **noteFlow** creado en la consola; paquetes `@react-native-firebase/*` instalados. Siguiente: terminar Firestore y Auth en la consola, registrar app móvil y Development Build — guía paso a paso en [`docs/setup-firebase.md`](docs/setup-firebase.md).
+**Flujo real (junio 2026):**
+- **Auth principal:** Firebase email/contraseña.
+- **Perfil:** colección `users` en Firestore (`name`, `email`, `createdAt`, `avatarUrl`).
+- **Notas:** API REST (`noteflow-api` + Neon) cuando hay JWT; si no hay JWT o falla API, fallback local por usuario con AsyncStorage.
+- **Sync Firebase -> API:** tras login/register se intenta obtener sesión JWT para usar endpoints `/notes`.
 
 ---
 
@@ -142,7 +147,7 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 - **Expo Router** — [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md)
 - **React Native Paper** (MD3) + tokens en `constants/theme.ts`
 - **FlashList** — `@shopify/flash-list`
-- **Zustand** — estado global; fuente de verdad vía `lib/api.ts`
+- **Zustand** — estado global con estrategia híbrida: API REST y fallback local
 - **expo-secure-store** — token JWT cifrado (no AsyncStorage)
 - **Zod** — validación en formularios
 - **expo-haptics**, **react-native-reanimated**
@@ -163,11 +168,13 @@ components/
   items/               # Tarjetas y AnimatedCardWrapper
   list/                # Cabecera, vacíos, BulkArchiveBar
   UserMenuButton.tsx   # Cuenta + cerrar sesión
-lib/api.ts             # Cliente HTTP + Bearer JWT
+lib/api.ts             # Cliente HTTP + Bearer JWT (+ ensureApiAuthToken)
 lib/authApi.ts         # Register / login
 lib/authStorage.ts     # Token en SecureStore
+lib/localNotesRepository.ts # Persistencia local por usuario (AsyncStorage)
+lib/syncApiAuth.ts     # Bridge Firebase Auth -> JWT API
 store/authStore.ts     # Sesión
-store/notesStore.ts    # Zustand async (fetch, CRUD, archivar)
+store/notesStore.ts    # Zustand async (API + fallback local)
 app/login.tsx          # Pantalla de acceso
 components/AuthGate.tsx
 schemas/noteSchemas.ts
@@ -443,7 +450,7 @@ noteflow-api/
 | `docs/vercel-deploy.md` | Despliegue Vercel |
 | `docs/modelo-datos.md` | Tipos, `AnyNote`, type guards, `isArchived` |
 | `docs/gestion-estado.md` | useState / Context / Zustand en NoteFlow |
-| `docs/persistencia.md` | Historial AsyncStorage (fase anterior del curso) |
+| `docs/persistencia.md` | Persistencia real actual: fallback local por usuario y carga inicial |
 | `docs/pendiente-ejercicio.md` | Checklist del curso |
 | `docs/react-native-teoria.md` | Metro, RN vs nativo, Paper, FlashList |
 | `docs/react-native-fundamentals.md` | Hilos JS/UI y rendimiento |
