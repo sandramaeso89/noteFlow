@@ -3,9 +3,11 @@
  * Valida con Zod antes de persistir en Zustand; acepta `?type=` para abrir
  * directamente el segmento correspondiente desde cada pestaña.
  */
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,7 +15,10 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Button, SegmentedButtons, Text, TextInput } from 'react-native-paper';
+import { Button, SegmentedButtons, Switch, Text, TextInput } from 'react-native-paper';
+
+import { formatNoteCardDate } from '../utils/formatDate';
+import { scheduleReminder } from '../utils/notifications';
 
 import { FieldError } from '../components/forms/FieldError';
 import { radius, spacing } from '../constants/theme';
@@ -36,6 +41,13 @@ function parseInitialType(value: string | string[] | undefined): ContentType {
   return 'note';
 }
 
+/** Por defecto: recordatorio una hora después de abrir el formulario. */
+function defaultReminderDate(): Date {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() + 60);
+  return date;
+}
+
 export default function NuevaNoteScreen() {
   const colors = useNoteFlowColors();
   const params = useLocalSearchParams<{ type?: string }>();
@@ -55,6 +67,9 @@ export default function NuevaNoteScreen() {
   const [selectedColor, setSelectedColor] = useState<string>(IDEA_COLOR_OPTIONS[0]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderDate, setReminderDate] = useState(defaultReminderDate);
+  const [showAndroidDatePicker, setShowAndroidDatePicker] = useState(false);
 
   function handleClose() {
     if (isSaving) return;
@@ -73,10 +88,26 @@ export default function NuevaNoteScreen() {
         setErrors(zodFieldErrors(result.error));
         return;
       }
+      if (reminderEnabled && reminderDate.getTime() <= Date.now()) {
+        setErrors({ reminder: 'El recordatorio debe ser en el futuro' });
+        return;
+      }
       setIsSaving(true);
       try {
         const ok = await addNote(result.data);
-        if (ok) handleClose();
+        if (!ok) return;
+
+        if (reminderEnabled) {
+          const notificationId = await scheduleReminder(result.data.title, reminderDate);
+          if (!notificationId) {
+            Alert.alert(
+              'Recordatorio no programado',
+              'Revisa permisos de notificaciones en Ajustes y que la fecha sea futura.'
+            );
+          }
+        }
+
+        handleClose();
       } finally {
         setIsSaving(false);
       }
@@ -197,6 +228,57 @@ export default function NuevaNoteScreen() {
                 textColor={colors.textPrimary}
               />
               <FieldError message={errors.content} />
+
+              <View style={styles.reminderBlock}>
+                <View style={styles.reminderHeader}>
+                  <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                    Recordatorio local
+                  </Text>
+                  <Switch
+                    value={reminderEnabled}
+                    onValueChange={setReminderEnabled}
+                    disabled={isSaving}
+                  />
+                </View>
+                {reminderEnabled ? (
+                  <>
+                    {Platform.OS === 'android' ? (
+                      <>
+                        <Button
+                          mode="outlined"
+                          onPress={() => setShowAndroidDatePicker(true)}
+                          disabled={isSaving}
+                          textColor={colors.textPrimary}
+                        >
+                          {formatNoteCardDate(reminderDate)}
+                        </Button>
+                        {showAndroidDatePicker ? (
+                          <DateTimePicker
+                            value={reminderDate}
+                            mode="datetime"
+                            minimumDate={new Date()}
+                            onChange={(_event, date) => {
+                              setShowAndroidDatePicker(false);
+                              if (date) setReminderDate(date);
+                            }}
+                          />
+                        ) : null}
+                      </>
+                    ) : (
+                      <DateTimePicker
+                        value={reminderDate}
+                        mode="datetime"
+                        minimumDate={new Date()}
+                        onChange={(_event, date) => {
+                          if (date) setReminderDate(date);
+                        }}
+                        style={styles.datePicker}
+                      />
+                    )}
+                    <FieldError message={errors.reminder} />
+                  </>
+                ) : null}
+              </View>
             </>
           )}
 
@@ -334,6 +416,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.button,
+  },
+  reminderBlock: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  reminderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  datePicker: {
+    alignSelf: 'flex-start',
   },
   actions: {
     flexDirection: 'row',

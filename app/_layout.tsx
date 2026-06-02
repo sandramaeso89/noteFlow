@@ -16,6 +16,7 @@ import { getNoteFlowPaperTheme, spacing } from '../constants/theme';
 import { useNoteFlowColors } from '../hooks/useNoteFlowColors';
 import { resolveSessionUser } from '../lib/firebaseAuth';
 import { useAuthStore } from '../store/authStore';
+import { configureNotificationHandler } from '../utils/notifications';
 
 const AUTH_ROUTES = new Set(['login', 'register']);
 
@@ -120,6 +121,10 @@ function RootNavigator() {
 export default function RootLayout() {
   const colorScheme = useResolvedColorScheme();
   const theme = getNoteFlowPaperTheme(colorScheme);
+
+  useEffect(() => {
+    configureNotificationHandler();
+  }, []);
 
   return (
     <SafeAreaProvider>

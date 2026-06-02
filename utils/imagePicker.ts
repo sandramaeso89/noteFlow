@@ -3,7 +3,8 @@
  * Pide permiso al SO antes de acceder (enunciado del tutor).
  */
 import * as ImagePicker from 'expo-image-picker';
-import { Alert } from 'react-native';
+
+import { handlePermissionResult } from './permissions';
 
 export type PickedImage = {
   uri: string;
@@ -13,12 +14,13 @@ export type PickedImage = {
 
 /** Abre la galería con recorte cuadrado 1:1 (avatar). */
 export async function pickImageFromGallery(): Promise<PickedImage | null> {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== 'granted') {
-    Alert.alert(
-      'Permiso necesario',
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (
+    !handlePermissionResult(
+      permission,
       'Necesitamos permiso para acceder a tu galería.'
-    );
+    )
+  ) {
     return null;
   }
 
@@ -43,12 +45,10 @@ export async function pickImageFromGallery(): Promise<PickedImage | null> {
 
 /** Abre la cámara (útil para adjuntos o avatar en fases posteriores). */
 export async function takePhotoWithCamera(): Promise<PickedImage | null> {
-  const { status } = await ImagePicker.requestCameraPermissionsAsync();
-  if (status !== 'granted') {
-    Alert.alert(
-      'Permiso necesario',
-      'Necesitamos permiso para usar la cámara.'
-    );
+  const permission = await ImagePicker.requestCameraPermissionsAsync();
+  if (
+    !handlePermissionResult(permission, 'Necesitamos permiso para usar la cámara.')
+  ) {
     return null;
   }
 

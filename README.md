@@ -1,8 +1,33 @@
 # NoteFlow
 
-## Arranque rápido — Development Build (Firebase)
+## Arranque cada día
 
-> **Importante:** NoteFlow usa **Firebase nativo** (`@react-native-firebase`). **No uses Expo Go** (si en Metro pulsas `s`, vuelves a Go y fallará). Necesitas un **development build** instalado en el emulador o dispositivo.
+> **No uses Expo Go.** NoteFlow usa módulos nativos (Firebase, notificaciones, galería). Abre el icono **noteFlow** en el emulador o móvil, no el de Expo Go. Si en Metro pulsas `s`, vuelves a Go y fallará.
+
+**Paso 1.** Abre una terminal y entra en el proyecto:
+
+```bash
+cd noteFlow
+```
+
+**Paso 2.** Arranca Metro (bundler) en modo development build:
+
+```bash
+npx expo start --dev-client -c
+```
+
+**Paso 3.** Abre la app en el emulador o dispositivo:
+
+- Pulsa **`a`** (Android) o **`i`** (iOS) en la terminal, **o**
+- Toca el icono **noteFlow** (no Expo Go).
+
+**Paso 4.** Inicia sesión con Firebase si te lo pide y usa la app (**Notas · Checklists · Ideas · Archivo**).
+
+---
+
+## Primera vez en este Mac (solo una vez)
+
+> Tras instalar dependencias nuevas con código nativo (`expo-notifications`, Firebase, etc.) o un emulador nuevo, vuelve a **compilar** (`npx expo run:android` / `run:ios`, más abajo) antes del arranque diario.
 
 ### Primera vez (setup en tu Mac)
 
@@ -36,35 +61,28 @@ npx expo run:android
 npx expo run:ios
 ```
 
-Si el build de Android falla con un error tipo `values-xlarge-v4 2.json` (caché Gradle corrupta):
+Si el build de Android falla por **caché corrupta** o archivos duplicados de macOS (`values 3.xml`, `ExpoModulesPackageList 2.java`, `Duplicate resources`):
 
 ```bash
-rm -rf android/app/build android/build android/app/.cxx
+# Borra copias fantasma "archivo 2.java" que macOS a veces crea en build/
+find android node_modules -name '* 2.*' -delete 2>/dev/null
+find android node_modules -path '*/build/*' -name '* 3.*' -delete 2>/dev/null
+
+rm -rf android/app/build android/build android/.gradle android/app/.cxx
+rm -rf node_modules/expo/android/build node_modules/react-native-screens/android/build
+
 npx expo run:android --no-build-cache
 ```
 
-### Cada día (desarrollo)
+> **Consejo:** no copies carpetas `build/` en Finder; si iCloud duplica archivos, ejecuta el `find … -delete` de arriba antes de compilar.
 
-**1. Metro con dev client**
+| Cuándo | Qué hacer |
+|--------|-----------|
+| **Cada día** | Pasos 1–4 de [Arranque cada día](#arranque-cada-día) |
+| **Primera vez / emulador nuevo / plugin nativo nuevo** | `npx expo run:android` o `npx expo run:ios` (ver abajo) |
+| **Build Android falla (caché / `* 2.java`)** | Bloque `find … -delete` + `rm -rf` de arriba y `npx expo run:android --no-build-cache` |
 
-```bash
-npx expo start --dev-client -c
-```
-
-**2. Abrir la app**
-
-- Pulsa **`a`** (Android) o **`i`** (iOS) en la terminal, **o**
-- Abre el icono **noteFlow** en el emulador/dispositivo (no el de Expo Go).
-
-**3. Sesión:** login o registro (Firebase). Pestañas **Notas · Checklists · Ideas · Archivo**. Menú de cuenta (cabecera) → foto de perfil y **Cerrar sesión**.
-
-| Paso | Comando | Cuándo |
-|------|---------|--------|
-| Instalar build nativo | `npx expo run:android` / `run:ios` | Primera vez o emulador nuevo |
-| Arrancar bundler | `npx expo start --dev-client -c` | Siempre |
-| Abrir app | `a` / `i` o icono **noteFlow** | Con el build ya instalado |
-
-Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md).
+Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md) · Notificaciones: [`docs/notificaciones-locales.md`](docs/notificaciones-locales.md).
 
 ---
 
@@ -126,6 +144,7 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 | Documentación backend, auth y Vercel | Hecho | `docs/setup-auth-local.md`, `docs/auth-api.md`, `docs/vercel-deploy.md` |
 | Firebase (Auth + perfil `users` en Firestore) | Hecho | `lib/firebaseAuth.ts`, `lib/userProfile.ts` |
 | Notas en Firestore | Pendiente | Aun no implementado (flujo actual: API REST + fallback local) |
+| Notificaciones locales + permisos (Ajustes) | Hecho | `utils/notifications.ts`, `docs/notificaciones-locales.md` |
 
 **Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
@@ -150,7 +169,7 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 - **Zustand** — estado global con estrategia híbrida: API REST y fallback local
 - **expo-secure-store** — token JWT cifrado (no AsyncStorage)
 - **Zod** — validación en formularios
-- **expo-haptics**, **react-native-reanimated**
+- **expo-haptics**, **react-native-reanimated**, **expo-notifications** (recordatorios locales)
 
 **Expo Go** vs **Development Build:** [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md).
 
@@ -451,6 +470,7 @@ noteflow-api/
 | `docs/modelo-datos.md` | Tipos, `AnyNote`, type guards, `isArchived` |
 | `docs/gestion-estado.md` | useState / Context / Zustand en NoteFlow |
 | `docs/persistencia.md` | Persistencia real actual: fallback local por usuario y carga inicial |
+| `docs/notificaciones-locales.md` | Permisos nativos, recordatorios locales, rebuild dev client |
 | `docs/pendiente-ejercicio.md` | Checklist del curso |
 | `docs/react-native-teoria.md` | Metro, RN vs nativo, Paper, FlashList |
 | `docs/react-native-fundamentals.md` | Hilos JS/UI y rendimiento |
