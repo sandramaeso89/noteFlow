@@ -4,14 +4,16 @@
  */
 import { FlashList } from '@shopify/flash-list';
 import { Stack, router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { AnimatedCardWrapper } from '../../../components/items/AnimatedCardWrapper';
 import { ChecklistCard } from '../../../components/items/ChecklistCard';
 import { IdeaCard } from '../../../components/items/IdeaCard';
 import { NoteCard } from '../../../components/items/NoteCard';
+import { SwipeableCard } from '../../../components/items/SwipeableCard';
 import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { SwipeHintBanner } from '../../../components/list/SwipeHintBanner';
 import { ListScreenFrame } from '../../../components/list/ListScreenFrame';
 import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { spacing } from '../../../constants/theme';
@@ -52,6 +54,9 @@ export default function ArchivadasListScreen() {
   const notes = useNotesStore((s) => s.notes);
   const checklists = useNotesStore((s) => s.checklists);
   const ideas = useNotesStore((s) => s.ideas);
+  const deleteNote = useNotesStore((s) => s.deleteNote);
+  const deleteChecklist = useNotesStore((s) => s.deleteChecklist);
+  const deleteIdea = useNotesStore((s) => s.deleteIdea);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Mezcla los tres arrays, ordena por updatedAt y aplica filtro de búsqueda.
@@ -81,40 +86,53 @@ export default function ArchivadasListScreen() {
             : styles.listContent
         }
         ListHeaderComponent={
-          <ListScreenHeader
-            title="Archivadas"
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder="Buscar archivadas…"
-            onAddPress={() => router.push('/nueva-note')}
-          />
+          <Fragment>
+            <ListScreenHeader
+              title="Archivadas"
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder="Buscar archivadas…"
+              onAddPress={() => router.push('/nueva-note')}
+            />
+            <SwipeHintBanner visible={archivedRows.length > 0} />
+          </Fragment>
         }
         ListEmptyComponent={
           <ListEmptyState
             icon="archive-outline"
             message="No hay contenido archivado. Usa el menú ⋯ en el detalle de un ítem."
+            hint="En archivadas también puedes deslizar a la izquierda para borrar definitivamente (no desarchiva)."
           />
         }
         renderItem={({ item: row }) => (
           <AnimatedCardWrapper>
-            {row.kind === 'note' ? (
-              <NoteCard
-                note={row.item}
-                onPress={() => router.push(`/notas/${row.item.id}`)}
-              />
-            ) : null}
-            {row.kind === 'checklist' ? (
-              <ChecklistCard
-                checklist={row.item}
-                onPress={() => router.push(`/checklists/${row.item.id}`)}
-              />
-            ) : null}
-            {row.kind === 'idea' ? (
-              <IdeaCard
-                idea={row.item}
-                onPress={() => router.push(`/ideas/${row.item.id}`)}
-              />
-            ) : null}
+            <SwipeableCard
+              itemTitle={row.item.title}
+              onConfirmDelete={() => {
+                if (row.kind === 'note') void deleteNote(row.item.id);
+                else if (row.kind === 'checklist') void deleteChecklist(row.item.id);
+                else void deleteIdea(row.item.id);
+              }}
+            >
+              {row.kind === 'note' ? (
+                <NoteCard
+                  note={row.item}
+                  onPress={() => router.push(`/notas/${row.item.id}`)}
+                />
+              ) : null}
+              {row.kind === 'checklist' ? (
+                <ChecklistCard
+                  checklist={row.item}
+                  onPress={() => router.push(`/checklists/${row.item.id}`)}
+                />
+              ) : null}
+              {row.kind === 'idea' ? (
+                <IdeaCard
+                  idea={row.item}
+                  onPress={() => router.push(`/ideas/${row.item.id}`)}
+                />
+              ) : null}
+            </SwipeableCard>
           </AnimatedCardWrapper>
         )}
       />

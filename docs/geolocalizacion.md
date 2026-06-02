@@ -64,6 +64,6 @@ adb emu geo fix -3.7038 40.4168
 
 En **dispositivo físico**, activa **Ubicación** en Ajustes del sistema.
 
-## Reanimated
+## Reanimated y gestos
 
-La app ya usa **react-native-reanimated** en tarjetas y layout (`AnimatedCardWrapper`, `app/_layout.tsx`). El temario de “arquitectura de animaciones” es complemento teórico del curso; no requiere cambios extra para geolocalización.
+La app usa **react-native-reanimated** en listas y layout (`AnimatedCardWrapper`, `app/_layout.tsx`) y **react-native-gesture-handler** para swipe-to-delete (`SwipeableCard`). Ver [`gestos-swipe.md`](gestos-swipe.md). La geolocalización no depende de esas librerías.

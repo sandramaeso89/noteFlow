@@ -3,13 +3,15 @@
  */
 import { FlashList } from '@shopify/flash-list';
 import { Stack, router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AnimatedCardWrapper } from '../../../components/items/AnimatedCardWrapper';
 import { IdeaCard } from '../../../components/items/IdeaCard';
+import { SwipeableCard } from '../../../components/items/SwipeableCard';
 import { BulkArchiveBar } from '../../../components/list/BulkArchiveBar';
 import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { SwipeHintBanner } from '../../../components/list/SwipeHintBanner';
 import { ListScreenFrame } from '../../../components/list/ListScreenFrame';
 import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { ListSelectionHeader } from '../../../components/list/ListSelectionHeader';
@@ -24,6 +26,7 @@ export default function IdeasListScreen() {
   const colors = useNoteFlowColors();
   const ideas = useNotesStore((s) => s.ideas);
   const archiveIdeas = useNotesStore((s) => s.archiveIdeas);
+  const deleteIdea = useNotesStore((s) => s.deleteIdea);
   const refreshNotes = useNotesStore((s) => s.refreshNotes);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
@@ -98,16 +101,19 @@ export default function IdeasListScreen() {
                   emptyHint="Selecciona ideas"
                 />
               ) : (
-                <ListScreenHeader
-                  title="Ideas"
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  searchPlaceholder="Buscar ideas…"
-                  onAddPress={() => router.push({ pathname: '/nueva-note', params: { type: 'idea' } })}
-                  onSelectPress={
-                    visibleIdeas.length > 0 ? () => enterSelectionMode() : undefined
-                  }
-                />
+                <Fragment>
+                  <ListScreenHeader
+                    title="Ideas"
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    searchPlaceholder="Buscar ideas…"
+                    onAddPress={() => router.push({ pathname: '/nueva-note', params: { type: 'idea' } })}
+                    onSelectPress={
+                      visibleIdeas.length > 0 ? () => enterSelectionMode() : undefined
+                    }
+                  />
+                  <SwipeHintBanner visible={visibleIdeas.length > 0} />
+                </Fragment>
               )
             }
             ListEmptyComponent={
@@ -117,6 +123,11 @@ export default function IdeasListScreen() {
                   searchQuery.trim()
                     ? `Ningún resultado para «${searchQuery.trim()}».`
                     : 'Guarda ideas sueltas antes de que se pierdan.'
+                }
+                hint={
+                  searchQuery.trim()
+                    ? undefined
+                    : 'Cuando tengas ideas, desliza una tarjeta a la izquierda para eliminarla definitivamente (no archiva).'
                 }
                 ctaLabel={searchQuery.trim() ? undefined : 'Capturar idea'}
                 onCtaPress={
@@ -128,24 +139,32 @@ export default function IdeasListScreen() {
             }
             renderItem={({ item }) => (
               <AnimatedCardWrapper>
-                <IdeaCard
-                  idea={item}
-                  selectionMode={selectionMode}
-                  selected={selectedSet.has(item.id)}
-                  onPress={
-                    selectionMode
-                      ? () => toggleSelection(item.id)
-                      : () => router.push(`/ideas/${item.id}`)
-                  }
-                  onLongPress={
-                    selectionMode
-                      ? undefined
-                      : () => {
-                          void hapticImpactLight();
-                          enterSelectionMode(item.id);
-                        }
-                  }
-                />
+                <SwipeableCard
+                  enabled={!selectionMode}
+                  itemTitle={item.title}
+                  onConfirmDelete={() => {
+                    void deleteIdea(item.id);
+                  }}
+                >
+                  <IdeaCard
+                    idea={item}
+                    selectionMode={selectionMode}
+                    selected={selectedSet.has(item.id)}
+                    onPress={
+                      selectionMode
+                        ? () => toggleSelection(item.id)
+                        : () => router.push(`/ideas/${item.id}`)
+                    }
+                    onLongPress={
+                      selectionMode
+                        ? undefined
+                        : () => {
+                            void hapticImpactLight();
+                            enterSelectionMode(item.id);
+                          }
+                    }
+                  />
+                </SwipeableCard>
               </AnimatedCardWrapper>
             )}
           />

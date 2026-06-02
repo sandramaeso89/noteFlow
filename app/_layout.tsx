@@ -2,6 +2,7 @@
  * Layout raíz de la app (Expo Router).
  * Protege rutas con auth().onAuthStateChanged y envuelve tema Paper + carga de datos.
  */
+import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import auth from '@react-native-firebase/auth';
@@ -9,6 +10,7 @@ import { Stack, router, useSegments } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Appearance, StyleSheet, useColorScheme, View, type ColorSchemeName } from 'react-native';
 import { PaperProvider, Text, useTheme } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { StoreHydrationGate } from '../components/StoreHydrationGate';
@@ -127,19 +129,24 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <PaperProvider theme={theme}>
-        <ProtectedRoutes>
-          <StoreHydrationGate>
-            <RootNavigator />
-          </StoreHydrationGate>
-        </ProtectedRoutes>
-      </PaperProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <PaperProvider theme={theme}>
+          <ProtectedRoutes>
+            <StoreHydrationGate>
+              <RootNavigator />
+            </StoreHydrationGate>
+          </ProtectedRoutes>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   authLoading: {
     flex: 1,
     alignItems: 'center',

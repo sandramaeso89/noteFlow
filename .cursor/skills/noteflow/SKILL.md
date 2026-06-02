@@ -63,7 +63,7 @@ UI **moderna, minimalista y profesional** (pro / urban editorial en clave **mono
 
 ### Estado actual del repo (última documentación)
 
-**Entregable del curso implementado:** Expo SDK 54, cuatro tabs (Notas / Checklists / Ideas / Archivo), FlashList, tarjetas distintas, Zustand + persist AsyncStorage, Zod en `nueva-note`, Paper + tokens, UX (búsqueda, archivar, haptics, Reanimated). Documentación alineada en `README.md` y `docs/`. Inspecciona el árbol antes de citar rutas; no asumas archivos que no existan.
+**Entregable del curso implementado:** Expo SDK 54, cuatro tabs (Notas / Checklists / Ideas / Archivo), FlashList, tarjetas distintas, Zustand + persist AsyncStorage + API REST, Zod en `nueva-note`, Paper + tokens, UX (búsqueda, archivar, haptics, Reanimated, swipe-to-delete con Gesture Handler), notificaciones locales, geolocalización opcional en notas. Docs: `README.md`, `docs/gestos-swipe.md`, `docs/notificaciones-locales.md`, `docs/geolocalizacion.md`. Inspecciona el árbol antes de citar rutas; no asumas archivos que no existan.
 
 ---
 

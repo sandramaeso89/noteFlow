@@ -92,6 +92,9 @@ npx expo install expo-haptics
 - [x] Búsqueda (`ListScreenHeader` + `utils/filters.ts`)
 - [x] Reanimated (`AnimatedCardWrapper`)
 - [x] Archivar + pestaña **Archivo** (`archivadas/`, `isArchived`)
+- [x] Gesture Handler + swipe para eliminar (`SwipeableCard`, `docs/gestos-swipe.md`)
+- [x] Notificaciones locales programadas (`docs/notificaciones-locales.md`)
+- [x] Geolocalización opcional en notas (`docs/geolocalizacion.md`)
 
 ---
 
@@ -117,6 +120,8 @@ Repositorio en GitHub con el proyecto Expo funcional:
 | Store + persist | `store/notesStore.ts`, `docs/persistencia.md` |
 | UI / tokens | `constants/theme.ts`, `docs/diseno-ui.md` |
 | Tarjetas + listas | `components/items/`, `app/(tabs)/*/index.tsx` |
+| Animaciones + gestos | `AnimatedCardWrapper`, `SwipeableCard`, `docs/gestos-swipe.md` |
+| Notificaciones / GPS | `utils/notifications.ts`, `utils/location.ts` |
 | Formularios | `app/nueva-note.tsx`, `schemas/noteSchemas.ts` |
 | UX detalle / archivo | `components/detail/`, `utils/haptics.ts`, `archivadas/` |
 | Navegación | `app/`, `docs/expo-router-navegacion.md` |

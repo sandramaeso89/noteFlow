@@ -28,15 +28,22 @@ export function confirmArchive(
 
 export function confirmPermanentDelete(
   title: string,
-  onConfirm: () => void
+  onConfirm: () => void,
+  onCancel?: () => void
 ): void {
   Alert.alert(
     'Eliminar definitivamente',
-    `¿Borrar «${title}»? No se puede deshacer.`,
+    `«${title}» se borrará para siempre.\n\nNo es archivar: no aparecerá en la pestaña Archivadas. ¿Continuar?`,
     [
-      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Eliminar',
+        text: 'Cancelar',
+        style: 'cancel',
+        onPress: () => {
+          onCancel?.();
+        },
+      },
+      {
+        text: 'Eliminar definitivamente',
         style: 'destructive',
         onPress: () => {
           void hapticImpactLight();

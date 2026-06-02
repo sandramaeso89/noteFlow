@@ -100,6 +100,7 @@ npx expo run:android --no-build-cache
 | **Primera vez / emulador nuevo / plugin nativo nuevo** | `npx expo run:android` o `npx expo run:ios` (ver abajo) |
 | **Build Android falla (caché / `* 2.java`)** | Bloque `find … -delete` + `rm -rf` de arriba y `npx expo run:android --no-build-cache` |
 | **GPS: «Current location is unavailable»** | Emulador: ⋮ → **Location** → marcar punto. Ver [`docs/geolocalizacion.md`](docs/geolocalizacion.md) |
+| **Error en `SwipeableCard` / gesture-handler** | Tras instalar el paquete: `npx expo run:android` (rebuild dev client). Ver [`docs/gestos-swipe.md`](docs/gestos-swipe.md) |
 
 **Migración Neon (ubicación GPS en API)** — ejecuta una vez en el [SQL Editor de Neon](https://console.neon.tech):
 
@@ -112,7 +113,7 @@ ALTER TABLE notes
 
 Sin esto, las notas **con ubicación** fallan contra la API en Vercel; el modo local en el móvil sigue funcionando.
 
-Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md) · Notificaciones: [`docs/notificaciones-locales.md`](docs/notificaciones-locales.md) · GPS: [`docs/geolocalizacion.md`](docs/geolocalizacion.md).
+Más contexto: [`docs/expo-go-vs-development-build.md`](docs/expo-go-vs-development-build.md) · Firebase: [`docs/setup-firebase.md`](docs/setup-firebase.md) · Notificaciones: [`docs/notificaciones-locales.md`](docs/notificaciones-locales.md) · GPS: [`docs/geolocalizacion.md`](docs/geolocalizacion.md) · Gestos: [`docs/gestos-swipe.md`](docs/gestos-swipe.md).
 
 ---
 
@@ -176,6 +177,8 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 | Notas en Firestore | Pendiente | Aun no implementado (flujo actual: API REST + fallback local) |
 | Notificaciones locales + permisos (Ajustes) | Hecho | `utils/notifications.ts`, `docs/notificaciones-locales.md` |
 | Geolocalización (GPS + lat/lon en API) | Hecho | `utils/location.ts`, `docs/geolocalizacion.md` |
+| Swipe para eliminar (Gesture Handler + Reanimated) | Hecho | `components/items/SwipeableCard.tsx`, `docs/gestos-swipe.md` |
+| Animaciones de entrada en listas | Hecho | `components/items/AnimatedCardWrapper.tsx` |
 
 **Navegación:** pestañas **Notas · Checklists · Ideas · Archivo**; detalle `[id]` por sección; modal **`/nueva-note`**. Ver [`docs/expo-router-navegacion.md`](docs/expo-router-navegacion.md).
 
@@ -201,7 +204,8 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 - **Zustand** — estado global con estrategia híbrida: API REST y fallback local
 - **expo-secure-store** — token JWT cifrado (no AsyncStorage)
 - **Zod** — validación en formularios
-- **expo-haptics**, **react-native-reanimated** (animaciones en tarjetas y layout)
+- **expo-haptics**, **react-native-reanimated** (entradas en listas + layout)
+- **react-native-gesture-handler** — swipe para eliminar en listas ([`docs/gestos-swipe.md`](docs/gestos-swipe.md))
 - **expo-notifications** — recordatorios locales al crear nota
 - **expo-location** — GPS y geocodificación inversa (`latitude` / `longitude` en API)
 
@@ -211,14 +215,14 @@ Columnas del tablero: **Backlog**, **Todo**, **In Progress**, **Review**, **Done
 
 ```text
 app/
-  _layout.tsx          # PaperProvider, StoreHydrationGate, Stack raíz
+  _layout.tsx          # GestureHandlerRootView, PaperProvider, StoreHydrationGate
   nueva-note.tsx       # Modal alta (Zod + store)
   (tabs)/
     notas|checklists|ideas|archivadas/
       index.tsx        # FlashList + selección múltiva
       [id].tsx         # Detalle + DetailHeaderMenu
 components/
-  items/               # Tarjetas y AnimatedCardWrapper
+  items/               # Tarjetas, AnimatedCardWrapper, SwipeableCard
   list/                # Cabecera, vacíos, BulkArchiveBar
   UserMenuButton.tsx   # Cuenta + cerrar sesión
 lib/api.ts             # Cliente HTTP + Bearer JWT (+ ensureApiAuthToken)
@@ -510,6 +514,7 @@ noteflow-api/
 | `docs/persistencia.md` | Persistencia real actual: fallback local por usuario y carga inicial |
 | `docs/notificaciones-locales.md` | Permisos nativos, recordatorios locales, rebuild dev client |
 | `docs/geolocalizacion.md` | expo-location, migración SQL, mostrar ubicación |
+| `docs/gestos-swipe.md` | Pan + Reanimated, swipe-to-delete en listas |
 | `docs/pendiente-ejercicio.md` | Checklist del curso |
 | `docs/react-native-teoria.md` | Metro, RN vs nativo, Paper, FlashList |
 | `docs/react-native-fundamentals.md` | Hilos JS/UI y rendimiento |

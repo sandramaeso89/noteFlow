@@ -6,6 +6,8 @@ import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 
+import { spacing } from '../../constants/theme';
+
 type AnimatedCardWrapperProps = {
   children: ReactNode;
 };
@@ -27,5 +29,7 @@ const styles = StyleSheet.create({
   wrap: {
     width: '100%',
     alignSelf: 'stretch',
+    // Separación entre filas (antes en CardShell; fuera del swipe para no asomar el rojo).
+    marginBottom: spacing.md,
   },
 });

@@ -32,7 +32,8 @@ Usar estos valores como tokens en `constants/theme.ts` cuando se implemente la U
 | `textTertiary` | `#8A8A92` | Labels `NOTA` / `CHECKLIST` / `IDEIA`, timestamps |
 | `textDisabled` | `#B0B0B8` | Placeholders, estados vacíos |
 | `track` | `#E0E0E6` | Fondo barra de progreso (checklist) |
-| `fill` | `#1A1A1E` | Relleno barra de progreso |
+| `fill` | `#1A1A1E` | Relleno barra de progreso; fondo de acción swipe «Eliminar» |
+| `onFill` | `#FFFFFF` (claro) / `#141414` (oscuro) | Texto e icono sobre `fill` |
 
 **Acento de marca (puntual):** violeta `#5B458C` — solo donde aporte significado (p. ej. indicador de tipo Nota), no en toda la UI.
 

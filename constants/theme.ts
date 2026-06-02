@@ -72,6 +72,8 @@ export type NoteFlowColors = {
   fill: string;
   accent: string;
   error: string;
+  /** Texto e iconos sobre fondos `fill` (p. ej. acción de swipe). */
+  onFill: string;
 };
 
 const colorsLight: NoteFlowColors = {
@@ -89,6 +91,7 @@ const colorsLight: NoteFlowColors = {
   fill: '#1A1A1E',
   accent: '#5B458C',
   error: '#B3261E',
+  onFill: '#FFFFFF',
 };
 
 const colorsDark: NoteFlowColors = {
@@ -106,6 +109,7 @@ const colorsDark: NoteFlowColors = {
   fill: '#E8E8EC',
   accent: '#B8A4E8',
   error: '#F2B8B5',
+  onFill: '#141414',
 };
 
 export function getNoteFlowColors(

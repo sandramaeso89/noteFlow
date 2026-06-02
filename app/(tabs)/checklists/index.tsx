@@ -3,13 +3,15 @@
  */
 import { FlashList } from '@shopify/flash-list';
 import { Stack, router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AnimatedCardWrapper } from '../../../components/items/AnimatedCardWrapper';
 import { ChecklistCard } from '../../../components/items/ChecklistCard';
+import { SwipeableCard } from '../../../components/items/SwipeableCard';
 import { BulkArchiveBar } from '../../../components/list/BulkArchiveBar';
 import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { SwipeHintBanner } from '../../../components/list/SwipeHintBanner';
 import { ListScreenFrame } from '../../../components/list/ListScreenFrame';
 import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { ListSelectionHeader } from '../../../components/list/ListSelectionHeader';
@@ -24,6 +26,7 @@ export default function ChecklistsListScreen() {
   const colors = useNoteFlowColors();
   const checklists = useNotesStore((s) => s.checklists);
   const archiveChecklists = useNotesStore((s) => s.archiveChecklists);
+  const deleteChecklist = useNotesStore((s) => s.deleteChecklist);
   const refreshNotes = useNotesStore((s) => s.refreshNotes);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
@@ -99,18 +102,21 @@ export default function ChecklistsListScreen() {
                   emptyHint="Selecciona checklists"
                 />
               ) : (
-                <ListScreenHeader
-                  title="Checklists"
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  searchPlaceholder="Buscar checklists…"
-                  onAddPress={() =>
-                    router.push({ pathname: '/nueva-note', params: { type: 'checklist' } })
-                  }
-                  onSelectPress={
-                    visibleChecklists.length > 0 ? () => enterSelectionMode() : undefined
-                  }
-                />
+                <Fragment>
+                  <ListScreenHeader
+                    title="Checklists"
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    searchPlaceholder="Buscar checklists…"
+                    onAddPress={() =>
+                      router.push({ pathname: '/nueva-note', params: { type: 'checklist' } })
+                    }
+                    onSelectPress={
+                      visibleChecklists.length > 0 ? () => enterSelectionMode() : undefined
+                    }
+                  />
+                  <SwipeHintBanner visible={visibleChecklists.length > 0} />
+                </Fragment>
               )
             }
             ListEmptyComponent={
@@ -120,6 +126,11 @@ export default function ChecklistsListScreen() {
                   searchQuery.trim()
                     ? `Ningún resultado para «${searchQuery.trim()}».`
                     : 'Organiza tareas post-reunión en una checklist.'
+                }
+                hint={
+                  searchQuery.trim()
+                    ? undefined
+                    : 'Cuando tengas checklists, desliza una tarjeta a la izquierda para eliminarla definitivamente (no archiva).'
                 }
                 ctaLabel={searchQuery.trim() ? undefined : 'Crear checklist'}
                 onCtaPress={
@@ -131,24 +142,32 @@ export default function ChecklistsListScreen() {
             }
             renderItem={({ item }) => (
               <AnimatedCardWrapper>
-                <ChecklistCard
-                  checklist={item}
-                  selectionMode={selectionMode}
-                  selected={selectedSet.has(item.id)}
-                  onPress={
-                    selectionMode
-                      ? () => toggleSelection(item.id)
-                      : () => router.push(`/checklists/${item.id}`)
-                  }
-                  onLongPress={
-                    selectionMode
-                      ? undefined
-                      : () => {
-                          void hapticImpactLight();
-                          enterSelectionMode(item.id);
-                        }
-                  }
-                />
+                <SwipeableCard
+                  enabled={!selectionMode}
+                  itemTitle={item.title}
+                  onConfirmDelete={() => {
+                    void deleteChecklist(item.id);
+                  }}
+                >
+                  <ChecklistCard
+                    checklist={item}
+                    selectionMode={selectionMode}
+                    selected={selectedSet.has(item.id)}
+                    onPress={
+                      selectionMode
+                        ? () => toggleSelection(item.id)
+                        : () => router.push(`/checklists/${item.id}`)
+                    }
+                    onLongPress={
+                      selectionMode
+                        ? undefined
+                        : () => {
+                            void hapticImpactLight();
+                            enterSelectionMode(item.id);
+                          }
+                    }
+                  />
+                </SwipeableCard>
               </AnimatedCardWrapper>
             )}
           />

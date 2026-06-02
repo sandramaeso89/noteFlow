@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
   outer: {
     width: '100%',
     alignSelf: 'stretch',
-    marginBottom: spacing.md,
   },
   outerWithBar: {
     flexDirection: 'row',

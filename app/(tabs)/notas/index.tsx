@@ -3,13 +3,15 @@
  */
 import { FlashList } from '@shopify/flash-list';
 import { Stack, router } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AnimatedCardWrapper } from '../../../components/items/AnimatedCardWrapper';
 import { NoteCard } from '../../../components/items/NoteCard';
+import { SwipeableCard } from '../../../components/items/SwipeableCard';
 import { BulkArchiveBar } from '../../../components/list/BulkArchiveBar';
 import { ListEmptyState } from '../../../components/list/ListEmptyState';
+import { SwipeHintBanner } from '../../../components/list/SwipeHintBanner';
 import { ListScreenFrame } from '../../../components/list/ListScreenFrame';
 import { ListScreenHeader } from '../../../components/list/ListScreenHeader';
 import { ListSelectionHeader } from '../../../components/list/ListSelectionHeader';
@@ -24,6 +26,7 @@ export default function NotasListScreen() {
   const colors = useNoteFlowColors();
   const notes = useNotesStore((s) => s.notes);
   const archiveNotes = useNotesStore((s) => s.archiveNotes);
+  const deleteNote = useNotesStore((s) => s.deleteNote);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -91,18 +94,21 @@ export default function NotasListScreen() {
                   onCancel={exitSelectionMode}
                 />
               ) : (
-                <ListScreenHeader
-                  title="Notas"
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  searchPlaceholder="Buscar notas…"
-                  onAddPress={() =>
-                    router.push({ pathname: '/nueva-note', params: { type: 'note' } })
-                  }
-                  onSelectPress={
-                    visibleNotes.length > 0 ? () => enterSelectionMode() : undefined
-                  }
-                />
+                <Fragment>
+                  <ListScreenHeader
+                    title="Notas"
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    searchPlaceholder="Buscar notas…"
+                    onAddPress={() =>
+                      router.push({ pathname: '/nueva-note', params: { type: 'note' } })
+                    }
+                    onSelectPress={
+                      visibleNotes.length > 0 ? () => enterSelectionMode() : undefined
+                    }
+                  />
+                  <SwipeHintBanner visible={visibleNotes.length > 0} />
+                </Fragment>
               )
             }
             ListEmptyComponent={
@@ -112,6 +118,11 @@ export default function NotasListScreen() {
                   searchQuery.trim()
                     ? `Ningún resultado para «${searchQuery.trim()}». Prueba otro término.`
                     : 'Nada en el radar. Captura lo esencial de tu próxima reunión.'
+                }
+                hint={
+                  searchQuery.trim()
+                    ? undefined
+                    : 'Cuando tengas notas, desliza una tarjeta a la izquierda para eliminarla definitivamente (no archiva).'
                 }
                 ctaLabel={searchQuery.trim() ? undefined : 'Crear nota'}
                 onCtaPress={
@@ -123,24 +134,32 @@ export default function NotasListScreen() {
             }
             renderItem={({ item }) => (
               <AnimatedCardWrapper>
-                <NoteCard
-                  note={item}
-                  selectionMode={selectionMode}
-                  selected={selectedSet.has(item.id)}
-                  onPress={
-                    selectionMode
-                      ? () => toggleSelection(item.id)
-                      : () => router.push(`/notas/${item.id}`)
-                  }
-                  onLongPress={
-                    selectionMode
-                      ? undefined
-                      : () => {
-                          void hapticImpactLight();
-                          enterSelectionMode(item.id);
-                        }
-                  }
-                />
+                <SwipeableCard
+                  enabled={!selectionMode}
+                  itemTitle={item.title}
+                  onConfirmDelete={() => {
+                    void deleteNote(item.id);
+                  }}
+                >
+                  <NoteCard
+                    note={item}
+                    selectionMode={selectionMode}
+                    selected={selectedSet.has(item.id)}
+                    onPress={
+                      selectionMode
+                        ? () => toggleSelection(item.id)
+                        : () => router.push(`/notas/${item.id}`)
+                    }
+                    onLongPress={
+                      selectionMode
+                        ? undefined
+                        : () => {
+                            void hapticImpactLight();
+                            enterSelectionMode(item.id);
+                          }
+                    }
+                  />
+                </SwipeableCard>
               </AnimatedCardWrapper>
             )}
           />

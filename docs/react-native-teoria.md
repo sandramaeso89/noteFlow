@@ -147,6 +147,8 @@ En este repo usamos **FlashList 2.x** (Expo SDK 54), que **mide las celdas autom
 - Mantener las tarjetas **lo más ligeras** posible (evitar animaciones pesadas dentro de cada celda en la primera versión).
 - Usar **`keyExtractor` estable** (`item.id`).
 - Leer del store con **selectores** (`useNotesStore(s => s.notes)`) para no re-renderizar toda la pantalla al cambiar otro slice.
+- **Animaciones de entrada:** `AnimatedCardWrapper` (Reanimated, `FadeInDown` escalonado).
+- **Swipe para eliminar:** `SwipeableCard` (Gesture Handler + Reanimated en UI thread); ver [`gestos-swipe.md`](gestos-swipe.md). Desactivar el gesto en modo selección múltiple.
 
 Más contexto de hilos y fluidez: [`react-native-fundamentals.md`](react-native-fundamentals.md). Dirección visual de las tarjetas: [`diseno-ui.md`](diseno-ui.md).
 
@@ -158,6 +160,9 @@ Más contexto de hilos y fluidez: [`react-native-fundamentals.md`](react-native-
 |------|-----------|
 | Hilos JS / UI y rendimiento | [`react-native-fundamentals.md`](react-native-fundamentals.md) |
 | Expo Go vs Development Build | [`expo-go-vs-development-build.md`](expo-go-vs-development-build.md) |
+| Gestos (swipe-to-delete) | [`gestos-swipe.md`](gestos-swipe.md) |
+| Notificaciones locales | [`notificaciones-locales.md`](notificaciones-locales.md) |
+| Geolocalización | [`geolocalizacion.md`](geolocalizacion.md) |
 | Producto y pantallas | [`idea.md`](idea.md) |
 
 ---
@@ -175,6 +180,8 @@ Tabla de cierre del enunciado: qué pide el tutor y dónde está en este repo.
 | Formularios + Zod | `app/nueva-note.tsx`, `schemas/noteSchemas.ts` |
 | Zustand | `store/notesStore.ts` |
 | AsyncStorage | `persist` + clave `noteflow-storage`, `StoreHydrationGate` |
+| Reanimated + Gesture Handler | `AnimatedCardWrapper`, `SwipeableCard`, `GestureHandlerRootView` en `app/_layout.tsx` |
+| Notificaciones / GPS (nativo) | `utils/notifications.ts`, `utils/location.ts` |
 | Este documento (`react-native-teoria.md`) | RN vs nativo, Metro, Expo Go, comparativa UI, Paper, FlashList |
 
 Checklist detallado y pruebas manuales pendientes: [`pendiente-ejercicio.md`](pendiente-ejercicio.md).
